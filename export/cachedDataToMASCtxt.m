@@ -48,7 +48,7 @@ MASC_WRITE_STRING = [ ...
     '%s\t' ... % Cross Section
     '%s\t' ... % Aspect Ratio
     '%s\t' ... % Complexity
-    '\\N\t' ... % Flake Angle
+    '%s\t' ... % Flake Angle
     '%s\t' ... % Focus
     '\\N\t' ... % Focus Variability
     '\\N\t' ... % Max Area Focus
@@ -255,6 +255,7 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
             corners = goodSubFlakes{j,24};
             concave_num = goodSubFlakes{j,25};
             fallspeed = goodSubFlakes{j,26};
+            flakeang = goodSubFlakes{j,29};
             
             if isempty(num_pores) || isnan(num_pores)
                 num_pores = '\N';
@@ -289,6 +290,9 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
             if isempty(complexity) || isnan(complexity)
                 complexity = '\N';
             end
+            if isempty(flakeang) || isnan(flakeang)
+                flakeang = '\N';
+            end
             if isempty(aspectratio) || isnan(aspectratio)
                 aspectratio = '\N';
             end
@@ -322,6 +326,7 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
                 num2str(xsec, '%.3f'), ...
                 num2str(aspectratio, '%.3f'), ...
                 num2str(complexity, '%.3f'), ...
+                num2str(flakeang, '%.2f'), ...
                 num2str(focus, '%.3f'), ...
                 num2str(num_pores), ...
                 '\N', ... % No mean pore area

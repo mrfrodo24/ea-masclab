@@ -9,7 +9,7 @@
 function [goodSubFlakes] = initGoodSubFlakes( predefined )
     %% DEFINE goodSubFlakes
     MAX_GOODSUBFLAKES = 10000;
-    NUM_COLUMNS = 28;
+    NUM_COLUMNS = 29;
     goodSubFlakes = cell(MAX_GOODSUBFLAKES, NUM_COLUMNS);
     
     %% DEFAULT goodSubFlake Parameters (derived from SCAN & CROP)
@@ -89,6 +89,9 @@ function [goodSubFlakes] = initGoodSubFlakes( predefined )
     % NOTE: Should have been added with 1st section of parameters from Scan & Crop
     % Col. 27: <INT> # of Accepted Sub-flakes from Original
     % Col. 28: <INT> # of Good Sub-flakes from Original
+    
+    %% Orientation MODULE Output Parameters
+    % Col. 29: <FLOAT> Angle from horizontal of major axis
 
     %% ADDING A MODULE
     % The goodSubFlakes cell is for tracking the post-processing flake
