@@ -1,4 +1,4 @@
-function [ outputs ] = ConcaveNumber( ~, bounds, ~, ~)
+function [ outputs ] = ConcaveNumber( ~, ~, ~, inputs )
 %CONCAVENUMBER ConcaveNumber module summary enclosed
 %   
 %   SUMMARY:
@@ -9,7 +9,8 @@ function [ outputs ] = ConcaveNumber( ~, bounds, ~, ~)
 %       and the pixel area of the flake object.  The idea is that more
 %       rounded flakes will have a smaller Concave #.
 %
-%   INPUTS: None
+%   INPUTS: 
+%       1: The filled flake cross-section
 %
 %   OUTPUTS:
 %       1: The # of pixels in the convex hull of the flake that aren't in
@@ -20,8 +21,11 @@ function [ outputs ] = ConcaveNumber( ~, bounds, ~, ~)
 numOutputs = 1;
 outputs = cell(1,numOutputs);
 
+% Read inputs
+filledFlake = inputs{1};
+
 % Determine concave number
-stats = regionprops(bounds, 'ConvexImage', 'MajorAxisLength');
+stats = regionprops(filledFlake, 'ConvexImage', 'MajorAxisLength');
 if length(stats) > 1
     % Erroneous edges detected, pick the best (i.e. biggest) edge...
     allSizes = [stats.MajorAxisLength];
@@ -29,8 +33,7 @@ if length(stats) > 1
     stats = stats(whichBound);
 end
 hull_px = sum(sum(stats.ConvexImage));
-filled_bounds = imfill(bounds, 'holes');
-flake_px = sum(sum(filled_bounds));
+flake_px = sum(sum(filledFlake));
 concavity = abs(hull_px - flake_px);
 
 % Write outputs

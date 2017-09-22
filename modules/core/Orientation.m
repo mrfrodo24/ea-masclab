@@ -1,10 +1,11 @@
-function [ outputs ] = Orientation( ~, bounds, ~, ~ ) 
+function [ outputs ] = Orientation( ~, ~, ~, inputs ) 
 %ORIENTATION Orientation module summary...
 %
 %   SUMMARY:
 %       Determines the orientation of the flake in the img.
 %
-%   INPUTS: None
+%   INPUTS: 
+%       filledFlake - The filled cross-section of the cropped flake.
 %
 %   OUTPUTS:
 %       1: Estimated orientation
@@ -14,8 +15,11 @@ function [ outputs ] = Orientation( ~, bounds, ~, ~ )
 numOutputs = 1;
 outputs = cell(1,numOutputs);
 
+% Read inputs
+filledFlake = inputs{1};
+
 % Compute orientation
-stats = regionprops(bounds, 'Orientation');
+stats = regionprops(filledFlake, 'Orientation');
 
 % Write outputs
 outputs{1} = stats.Orientation;

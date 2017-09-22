@@ -232,7 +232,7 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
     
     % Initialize variable that will hold the timestamp for each flake
     % indexed in goodSubFlakes
-    goodDatesIndices = zeros(numGoodFlakes, 2);
+    goodDatesIndices = zeros(numGoodFlakes, 3);
     
     % Here, we want to go through and calculate a datenum for each of
     % the good flakes. We'll store these datenums in a separate array,
@@ -271,6 +271,9 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
 
         % Add index into goodSubFlakes (which will be stored in allGoodSubFlakes)
         goodDatesIndices(count_allflakes, 2) = j;
+        
+        % Add camId
+        goodDatesIndices(count_allflakes, 3) = str2num(timestampAndIds(strfind(timestampAndIds, 'cam_') + 4)); %#ok<ST2NM>
 
     end
     clear d startindex endindex filename
@@ -285,6 +288,11 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
         goodFlakesCounter = goodFlakesCounter + 1;
         continue;
     end
+        
+    % The filled flake cross-section is a commonly used entity for modules,
+    % however, it is somewhat expensive to calculate. So we will cache it for
+    % multiple module runs.
+    filledFlakes = cell(1,length(dates));
     
     % Loop through modules
     for j = 1 : length(modules)
@@ -320,6 +328,14 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
             % it can load it on its own. But, for the most part, the flake
             % bounds (provided by goodSubFlake{5}) will suffice.
             img_fullpath = [settings.pathToFlakes goodSubFlakes{flakeIndex,1}]; %#ok<NASGU>
+            
+            % Get the filled flake cross-section
+            if isempty(filledFlakes{k})
+                flake = imread([settings.pathToFlakes goodSubFlake{1}]);
+                resolution = 1000 / settings.camFOV(goodDatesIndices(k,3) + 1); % px / mm -> microns / px
+                filledFlakes{k} = FillFlake(flake, settings.lineFill, resolution);
+            end
+            settings.filledFlake = filledFlakes{k};
 
             % Get inputs for module
             [~,~,module_inputs] = ModuleInputHandler(modules{j}, goodSubFlake, settings, 3); %#ok<NASGU>

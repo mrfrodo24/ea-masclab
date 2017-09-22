@@ -1,4 +1,4 @@
-function [ outputs ] = CornerNumber( ~, bounds, ~, ~ )
+function [ outputs ] = CornerNumber( ~, ~, ~, inputs )
 %CORNERNUMBER CornerNumber Module summary enclosed
 %   
 %   SUMMARY:
@@ -8,7 +8,8 @@ function [ outputs ] = CornerNumber( ~, bounds, ~, ~ )
 %       formulae, so we're going with a Matlab image processing function
 %       called "corner".
 %
-%   INPUTS: None
+%   INPUTS: 
+%       1: The filled flake cross-section
 %
 %   OUTPUTS: 
 %       1: Approximate number of "corners"
@@ -18,8 +19,11 @@ function [ outputs ] = CornerNumber( ~, bounds, ~, ~ )
 numOutputs = 1;
 outputs = cell(1,numOutputs);
 
+% Read inputs
+filledFlake = inputs{1};
+
 % Call corner
-num_corners = size(corner(bounds),1);
+num_corners = size(corner(filledFlake),1);
 
 % Write outputs
 outputs{1} = num_corners;

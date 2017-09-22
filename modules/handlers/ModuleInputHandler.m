@@ -168,7 +168,7 @@ end
 function getModuleInputs
     switch whichModule
         case 'AspectRatio'
-            inputs = {'none'};
+            inputs{1} = getFilledFlake;
             
         case 'AvgIntensity'
             inputs = {'none'};
@@ -180,24 +180,18 @@ function getModuleInputs
             inputs{1} = goodSubFlake{17}; % Perimeter
             inputs{2} = goodSubFlake{19}; % EquivalentRadius
             inputs{3} = settings.backgroundThresh;
+            inputs{4} = getFilledFlake;
             
         case 'ConcaveNumber'
-            inputs = {'none'};
+            inputs{1} = getFilledFlake;
             
         case 'CornerNumber'
-            inputs = {'none'};
+            inputs{1} = getFilledFlake;
 
         case 'CrossSection'
             inputs{1} = settings.camFOV;
-            % Get the camera ID from the image filename...
-            % To do so we can utilize the reg expression pattern defined by 
-            %   the field "mascImgRegPattern" in settings.
-            filename = goodSubFlake{1};
-            matches = regexp(filename, settings.mascImgRegPattern, 'match');
-            timestampAndIds = matches{1};
-            camId = str2num(timestampAndIds(strfind(timestampAndIds, 'cam_') + 4));
-            % Set to inputs for Focus
-            inputs{2} = camId;
+            inputs{2} = getCamId;
+            inputs{3} = getFilledFlake;
 
         case 'EquivalentRadius'
             inputs{1} = goodSubFlake{18}; % Cross-sectional area (mm^2)
@@ -215,33 +209,23 @@ function getModuleInputs
 
         case 'MaxDiameter'
             inputs{1} = settings.camFOV;
-            % Get the camera ID from the image filename...
-            % To do so we can utilize the reg expression pattern defined by 
-            %   the field "mascImgRegPattern" in settings.
-            filename = goodSubFlake{1};
-            matches = regexp(filename, settings.mascImgRegPattern, 'match');
-            timestampAndIds = matches{1};
-            camId = str2num(timestampAndIds(strfind(timestampAndIds, 'cam_') + 4));
-            % Set to inputs for Focus
-            inputs{2} = camId;
-            inputs{3} = goodSubFlake{2}; % Is good flake?
+            inputs{2} = getCamId;
+            inputs{3} = getFilledFlake;
+            inputs{4} = goodSubFlake{2}; % Is good flake?
 
         case 'Orientation'
-            inputs = {'none'};
+            inputs{1} = getFilledFlake;
             
         % Deprecated
         case 'ParticleCrossSection'
             inputs{1} = goodSubFlake{18}; % Cross-section (mm^2)
             inputs{2} = settings.backgroundThresh;
+            inputs{3} = getFilledFlake;
 
         case 'Perimeter'
             inputs{1} = goodSubFlake{6}; % Perimeter measured in pixels
             inputs{2} = settings.camFOV;
-            filename = goodSubFlake{1};
-            matches = regexp(filename, settings.mascImgRegPattern, 'match');
-            timestampAndIds = matches{1};
-            camId = str2num(timestampAndIds(strfind(timestampAndIds, 'cam_') + 4));
-            inputs{3} = camId;
+            inputs{3} = getCamId;
 
         case 'Pores'
             inputs{1} = settings.backgroundThresh;
@@ -260,6 +244,26 @@ function getModuleInputs
         % Throw error, unrecognized module, can't process with module
 
     end
+end
+
+function [filledFlake] = getFilledFlake()
+    if isfield(settings, 'filledFlake') && ~isempty(settings.filledFlake)
+        filledFlake = settings.filledFlake;
+        return;
+    end
+    flake = imread([settings.pathToFlakes goodSubFlake{1}]);
+    resolution = 1000 / settings.camFOV(getCamId+1); % px / mm -> microns / px
+    filledFlake = FillFlake(flake, settings.lineFill, resolution);
+end
+
+function [camId] = getCamId()
+% GETCAMID Get the camera ID from the image filename...
+% To do so we can utilize the reg expression pattern defined by 
+%   the field "mascImgRegPattern" in settings.
+    filename = goodSubFlake{1};
+    matches = regexp(filename, settings.mascImgRegPattern, 'match');
+    timestampAndIds = matches{1};
+    camId = str2num(timestampAndIds(strfind(timestampAndIds, 'cam_') + 4)); %#ok<ST2NM>
 end
 
 

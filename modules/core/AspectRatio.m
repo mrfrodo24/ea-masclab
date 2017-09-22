@@ -1,10 +1,11 @@
-function [ outputs ] = AspectRatio( ~, bounds, ~, ~ ) 
+function [ outputs ] = AspectRatio( ~, ~, ~, inputs ) 
 %ASPECTRATIO AspectRatio module summary...
 %
 %   SUMMARY:
 %       Determines the aspect ratio of the flake in the img.
 %
-%   INPUTS: None
+%   INPUTS: 
+%       filledFlake - The filled cross-section of the cropped flake.
 %
 %   OUTPUTS:
 %       1: Estimated aspect ratio
@@ -14,8 +15,11 @@ function [ outputs ] = AspectRatio( ~, bounds, ~, ~ )
 numOutputs = 1;
 outputs = cell(1,numOutputs);
 
+% Read inputs
+filledFlake = inputs{1};
+
 % Compute aspect ratio
-stats = regionprops(bounds, 'MinorAxisLength', 'MajorAxisLength');
+stats = regionprops(filledFlake, 'MinorAxisLength', 'MajorAxisLength');
 if length(stats) > 1
     % Erroneous edges detected, pick the best (i.e. biggest) edge...
     allSizes = [stats.MajorAxisLength];

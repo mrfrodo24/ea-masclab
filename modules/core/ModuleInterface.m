@@ -1,4 +1,4 @@
-function [ outputs ] = ModuleInterface( img_array, bounds, topLeftCoords, varargin )
+function [ outputs ] = ModuleInterface( img_path, bounds, topLeftCoords, varargin )
 %ModuleInterface Serves as a model function for all future modules
 %   SUMMARY:
 %       In the CP3G MASC Analytics framework, modules are defined as such:
@@ -61,7 +61,7 @@ function [ outputs ] = ModuleInterface( img_array, bounds, topLeftCoords, vararg
 %   INPUTS:
 %       <Document module inputs (varargin) here>
 %       DEFAULTS:
-%           img_array - The image array
+%           img_path - The full file path of the image
 %           goodSubFlake - The flake's bounds, top-left coords, stats, etc.
 %           settings - Matlab struct of parameters defined in pre-processing.
 %           varargin:

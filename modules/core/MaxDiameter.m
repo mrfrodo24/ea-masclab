@@ -1,4 +1,4 @@
-function [ outputs ] = MaxDiameter( ~, bounds, ~, inputs )
+function [ outputs ] = MaxDiameter( ~, ~, ~, inputs )
 %MAXDIAMETER MaxDiameter module summary...
 %
 %   SUMMARY:
@@ -10,6 +10,7 @@ function [ outputs ] = MaxDiameter( ~, bounds, ~, inputs )
 %       1: List of camera "field-of-view"s. These provide the values that are needed
 %           in order to convert pixels into mm for each camera.
 %       2: Camera ID (0, 1, or 2)
+%       3: The filled flake cross-section (array)
 %       3: Is it a good flake?
 %
 %   OUTPUTS:
@@ -23,7 +24,8 @@ outputs = cell(1,numOutputs);
 % Read inputs
 camFOVs = inputs{1};
 cam_id = inputs{2};
-isgood = inputs{3};
+filledFlake = inputs{3};
+isgood = inputs{4};
 
 % DO NOT PROCESS if NOT "good" flake
 if ~isgood
@@ -31,23 +33,17 @@ if ~isgood
     return;
 end
 
-% Compute max diameter
-stats = regionprops(bounds, 'PixelList', 'MajorAxisLength');
+stats = regionprops(filledFlake, 'MajorAxisLength');
 if length(stats) > 1
     % Erroneous edges detected, pick the best (i.e. biggest) edge...
     allSizes = [stats.MajorAxisLength];
     whichBound = find( allSizes == max(allSizes), 1, 'first' );
     stats = stats(whichBound);
 end
-% Find longest distance between two points in the boundary
-pixels = stats.PixelList;
-distances = zeros(size(pixels,1),1);
-for i = 1:size(pixels,1)
-    distances(i) = max(sqrt(( pixels(i,2) - pixels(:,2) ).^2 + ( pixels(i,1) - pixels(:,1) ).^2));
-end
-max_axis = max(distances);
+
+% Compute max diameter
 resolution = 1 / camFOVs(cam_id + 1); % mm / pixel
-max_diam = max_axis * resolution;
+max_diam = stats.MajorAxisLength * resolution;
 
 % Write outputs
 outputs{1} = max_diam;

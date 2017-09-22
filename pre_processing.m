@@ -81,6 +81,7 @@ while s == 'n'
     fprintf(['applyLeftDiscardToCams: [' num2str(applyLeftDiscardToCams) ']\n'])
     fprintf('       rightDiscard: %i\n', rightDiscard)
     fprintf(['applyRightDiscardToCams: [' num2str(applyRightDiscardToCams) ']\n'])
+    fprintf('           lineFill: %i\n', lineFill)
     fprintf('      minFlakePerim: %.1f\n', minFlakePerim)
     fprintf('       minCropWidth: %.1f\n', minCropWidth)
     fprintf('       maxEdgeTouch: %.0f\n', maxEdgeTouch)
@@ -207,6 +208,7 @@ save('cache/gen_params/last_parameters.mat')
         settings.applyLeftDiscardToCams = applyLeftDiscardToCams;
         settings.rightDiscard = rightDiscard;
         settings.applyRightDiscardToCams = applyRightDiscardToCams;
+        settings.lineFill = lineFill;
         settings.minFlakePerim = minFlakePerim;
         settings.minCropWidth = minCropWidth;
         settings.maxEdgeTouch = maxEdgeTouch;
@@ -272,6 +274,9 @@ save('cache/gen_params/last_parameters.mat')
         end
         if isfield(settings, 'applyRightDiscardToCams')
             applyRightDiscardToCams = settings.applyRightDiscardToCams;
+        end
+        if isfield(settings, 'lineFill')
+            lineFill = settings.lineFill;
         end
         if isfield(settings, 'minFlakePerim')
             minFlakePerim = settings.minFlakePerim;
@@ -785,6 +790,38 @@ function define_params
     applyLeftDiscardToCams %#ok<NOPRT>
     rightDiscard %#ok<NOPRT>  
     applyRightDiscardToCams %#ok<NOPRT>
+    
+    %% Var lineFill
+    fprintf(['<strong>lineFill</strong>: In order to assess the flake area, internal\n' ...
+        '\tcomplexities are blurred with the lineFill parameter. This avoids small,\n' ...
+        '\tlocal discontinuities to make a single flake. This is essentially a guess\n' ...
+        '\tfor the minimum flake size (in microns).\n' ...
+        '\tIMPORANT: Used in Module processing!\n\t'])
+    cprintf('_text', 'Default ')
+    fprintf('= 200 (microns) \n')
+    if exist('lineFill', 'var')
+        s = input(sprintf('var lineFill = %.0f; Change to: ', lineFill), 's');
+        while ~isempty(s) && (isnan(str2double(s)) || str2double(s) < 0)
+            disp('Must input a non-negative value.')
+            s = input(sprintf('var lineFill = %.0f; Change to: ', lineFill), 's');
+        end
+        if ~isempty(s)
+            lineFill = str2double(s);
+        end
+    else
+        % Don't require user to set the format (if they don't, default to format 1)
+        s = input('Set lineFill to:', 's');
+        while ~isempty(s) && (isnan(str2double(s)) || str2double(s) < 0)
+            disp('Must input a non-negative value.')
+            s = input('Set lineFill to: ', 's');
+        end
+        if ~isempty(s)
+            lineFill = str2double(s);
+        else
+            lineFill = 200;
+        end
+    end
+    lineFill %#ok<NOPRT> % Display results of setting lineFill
     
     %% Var minFlakePerim
     fprintf(['<strong>minFlakePerim</strong>: The minimum acceptable perimeter of a flake in pixels.\n' ...

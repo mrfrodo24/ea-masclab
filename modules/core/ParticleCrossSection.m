@@ -1,4 +1,4 @@
-function [ outputs ] = ParticleCrossSection( img, bounds, ~, inputs )
+function [ outputs ] = ParticleCrossSection( img, ~, ~, inputs )
 %PARTICLECROSSSECTION ParticleCrossSection module summary...
 %
 %   SUMMARY:
@@ -7,6 +7,7 @@ function [ outputs ] = ParticleCrossSection( img, bounds, ~, inputs )
 %   INPUTS:
 %       1: Flake cross-section (from CrossSection module)
 %       2: Background threshold (from settings)
+%       3: The filled flake cross-section (array)
 %
 %   OUTPUTS:
 %       1: Estimated particle cross-section
@@ -23,19 +24,11 @@ img = imread(img_fullpath);
 % Read inputs
 xsec = inputs{1};
 backgroundThresh = inputs{2};
-
-% Check if img and bounds are not the same size (if so, then there's
-% padding on the bounds in the cropped image)
-if size(img,1) ~= size(bounds,1)
-    % Pad top/bottom
-    bounds = [zeros(5, size(bounds,2)); bounds; zeros(5, size(bounds,2))];
-    % Pad left/right
-    bounds = [zeros(size(bounds,1), 5), bounds, zeros(size(bounds,1), 5)];
-end
+filledFlake = inputs{3};
 
 %% COMPUTE PARTICLE CROSS SECTION
 
-stats = regionprops(bounds, 'PixelIdxList');
+stats = regionprops(filledFlake, 'PixelIdxList');
 areamask = stats.PixelIdxList;
 flakemask = areamask(img(areamask) > backgroundThresh);
 partialarea = length(flakemask) / length(areamask);
