@@ -26,7 +26,7 @@ if length(stats) > 1
     whichBound = find( allSizes == max(allSizes), 1, 'first' );
     stats = stats(whichBound);
 end
-asprat = [stats.MinorAxisLength] / [stats.MajorAxisLength];
+asprat = stats.MinorAxisLength / stats.MajorAxisLength;
 
 % Write outputs
 outputs{1} = asprat;
