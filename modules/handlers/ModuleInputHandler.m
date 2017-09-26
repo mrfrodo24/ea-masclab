@@ -179,8 +179,6 @@ function getModuleInputs
         case 'Complexity'
             inputs{1} = goodSubFlake{17}; % Perimeter
             inputs{2} = goodSubFlake{19}; % EquivalentRadius
-            inputs{3} = settings.backgroundThresh;
-            inputs{4} = getFilledFlake;
             
         case 'ConcaveNumber'
             inputs{1} = getFilledFlake;
@@ -195,6 +193,8 @@ function getModuleInputs
 
         case 'EquivalentRadius'
             inputs{1} = goodSubFlake{18}; % Cross-sectional area (mm^2)
+            inputs{2} = settings.backgroundThresh;
+            inputs{3} = getFilledFlake;
             
         case 'Fallspeed'
             % Full path to cropped image (so can know where to look for
@@ -223,7 +223,7 @@ function getModuleInputs
             inputs{3} = getFilledFlake;
 
         case 'Perimeter'
-            inputs{1} = goodSubFlake{6}; % Perimeter measured in pixels
+            inputs{1} = getFilledFlake;
             inputs{2} = settings.camFOV;
             inputs{3} = getCamId;
 

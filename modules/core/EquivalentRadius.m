@@ -1,4 +1,4 @@
-function [ outputs ] = EquivalentRadius( ~, ~, ~, inputs )
+function [ outputs ] = EquivalentRadius( img, ~, ~, inputs )
 %EQUIVALENTRADIUS EquivalentRadius module summary
 %
 %   SUMMARY:
@@ -16,10 +16,29 @@ numOutputs = 1;
 outputs = cell(1,numOutputs);
 
 % Read inputs
-part_xsec = inputs{1};
+xsec = inputs{1};
+backgroundThresh = inputs{2};
+filledFlake = inputs{3};
+
+% Load image
+img_fullpath = img;
+img = imread(img_fullpath);
+
+% Get flakemask
+stats = regionprops(filledFlake, 'PixelIdxList', 'MajorAxisLength');
+if length(stats) > 1
+    % Erroneous edges detected, pick the best (i.e. biggest) edge...
+    allSizes = [stats.MajorAxisLength];
+    whichBound = find( allSizes == max(allSizes), 1, 'first' );
+    stats = stats(whichBound);
+end
+areamask = [stats.PixelIdxList];
+flakemask = areamask(img(areamask) > backgroundThresh);
+partialarea = length(flakemask) / length(areamask); % Fraction of enclosedc area that
+                                                    % exeeds background.
 
 % Compute radius
-req = sqrt(part_xsec / pi);
+req = sqrt(partialarea * xsec / pi);
 
 % Write outputs
 outputs{1} = req;
