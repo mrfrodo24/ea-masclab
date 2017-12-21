@@ -254,6 +254,8 @@ function [filledFlake] = getFilledFlake()
     flake = imread([settings.pathToFlakes goodSubFlake{1}]);
     resolution = 1000 / settings.camFOV(getCamId+1); % px / mm -> microns / px
     filledFlake = FillFlake(flake, settings.lineFill, resolution);
+    % If running on Calibration dataset (e.g. airsoft pellets),
+    % need to use flake > 10 instead of FillFlake
 end
 
 function [camId] = getCamId()

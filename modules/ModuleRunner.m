@@ -47,7 +47,7 @@ else
     goodFlakesCounter = 0;
 end
 while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goodflakes.mat'],'file') && ...
-        (~isfield(settings, 'resume') || goodFlakesCounter < settings.resume_module_proc + 2)
+        (~isfield(settings, 'resume_module_proc') || goodFlakesCounter < settings.resume_module_proc + 2)
 
     % Maintain count of all flakes and whether goodSubFlakes gets modified
     modifiedGoodSubFlakes = 0;
@@ -186,6 +186,8 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
                 flake = imread([settings.pathToFlakes goodSubFlake{1}]);
                 resolution = 1000 / settings.camFOV(goodDatesIndices(k,3) + 1); % px / mm -> microns / px
                 filledFlakes{k} = FillFlake(flake, settings.lineFill, resolution);
+                % If running on Calibration dataset (e.g. airsoft pellets),
+                % need to use flake > 10 instead of FillFlake
             end
             settings.filledFlake = filledFlakes{k};
 
