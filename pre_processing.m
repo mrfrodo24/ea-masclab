@@ -199,7 +199,7 @@ cacheSettings;
         CACHED_PATH_SELECTION = str2num(paths(foundpath+cachedpath+13:foundpath+cachedpath+endcachedpath-1));
 
         clearvars -except settings CACHED_PATH_SELECTION
-        save(['cache/cached_paths_' CACHED_PATH_SELECTION '/last_parameters.mat'])
+        save(['cache/cached_paths_' num2str(CACHED_PATH_SELECTION) '/last_parameters.mat'])
         save('cache/gen_params/last_parameters.mat')
     end
 
