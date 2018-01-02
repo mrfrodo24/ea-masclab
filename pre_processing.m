@@ -24,12 +24,14 @@ if exist('cache/gen_params/last_parameters.mat','file')
     end
     
     if s == '1'
-        % User chose to do nothing, so just return
+        % User chose to do nothing, so just refresh the cache and return
+        load_settings; % Load the settings (either from gen_params or SELECTED_CACHED_PATH)
+        cacheSettings; % Cache the SELECTED_CACHED_PATH to gen_params and the selected path
         return;
         
     elseif s == '2'
-        load('cache/gen_params/last_parameters.mat')
-        settingsToVariables
+        load_settings;
+        settingsToVariables;
         redefine = 1; %#ok<*NASGU>
         
     else % s == '3'
@@ -183,11 +185,23 @@ fclose('all');
 
 % Put all parameters into a struct
 settings = paramsAsStruct;
-clearvars -except settings
 
 % Save current parameters to file for most recent parameters used
 disp('Caching these parameters...')
-save('cache/gen_params/last_parameters.mat')
+cacheSettings;
+
+    function cacheSettings
+        % Get selected cached path
+        paths = fileread('cache/cached_paths.txt');
+        foundpath = strfind(paths, ['"' settings.pathToFlakes '"']);
+        cachedpath = strfind(paths(foundpath:end), 'cached_paths_'); cachedpath = cachedpath(1) - 1;
+        endcachedpath = strfind(paths(foundpath+cachedpath:end), '"'); endcachedpath = endcachedpath(1) - 1;
+        CACHED_PATH_SELECTION = str2num(paths(foundpath+cachedpath+13:foundpath+cachedpath+endcachedpath-1));
+
+        clearvars -except settings CACHED_PATH_SELECTION
+        save(['cache/cached_paths_' CACHED_PATH_SELECTION '/last_parameters.mat'])
+        save('cache/gen_params/last_parameters.mat')
+    end
 
     function [settings] = paramsAsStruct
         % Save all parameters to a settings struct for convenient access and

@@ -22,8 +22,7 @@ clear; % Use this to clear all the pre_processing data since we're just
        % going to load it into a "settings" struct.
 
 % Load the parameters as chosen by user in pre_processing
-load('cache/gen_params/last_parameters.mat')
-fprintf('\n')
+load_settings;
 
 
 %% SCAN AND CROP
@@ -123,8 +122,8 @@ while 1 % Executes until user choose "Save and Quit" from Menu
         pre_processing();
 
         % Load the parameters as chosen by user in pre_processing
-        load('cache/gen_params/last_parameters.mat')
-        clearvars -except settings
+        load_settings;
+        clearvars -except settings CACHED_PATH_SELECTION
         
         fprintf('\n')
         user_choice = 'menu';
