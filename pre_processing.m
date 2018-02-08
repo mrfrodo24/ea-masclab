@@ -25,12 +25,14 @@ if exist('cache/gen_params/last_parameters.mat','file')
     
     if s == '1'
         % User chose to do nothing, so just refresh the cache and return
-        load_settings; % Load the settings (either from gen_params or SELECTED_CACHED_PATH)
+        [settings, selectedPath] = load_settings(); % Load the settings (either from gen_params or SELECTED_CACHED_PATH)
+        if selectedPath >= 0, CACHED_PATH_SELECTION = selectedPath; end
         cacheSettings; % Cache the SELECTED_CACHED_PATH to gen_params and the selected path
         return;
         
     elseif s == '2'
-        load_settings;
+        [settings, selectedPath] = load_settings();
+        if selectedPath >= 0, CACHED_PATH_SELECTION = selectedPath; end
         settingsToVariables;
         redefine = 1; %#ok<*NASGU>
         
@@ -164,16 +166,14 @@ if ~isempty(filesInPath)
     end
     
     % Open a new cache file
-    numCacheFiles = 1;
-    fwid = fopen(['cache/cached_paths_' num2str(numPaths) '/f' num2str(numCacheFiles) '.txt'], 'w');
+    fwid = fopen(['cache/cached_paths_' num2str(numPaths) '/f1.txt'], 'w');
     for i = 1:length(filesInPath)
         if ~mod(i,500)
             % Start a new cache file every 500 PNGs...
             % Assuming O(100) cropped flakes for each PNG, that would
             % result in O(50,000) records in each txt file.
             fclose(fwid);
-            numCacheFiles = numCacheFiles + 1;
-            fwid = fopen(['cache/cached_paths_' num2str(numPaths) '/f' num2str(numCacheFiles) '.txt'], 'w');
+            fwid = fopen(['cache/cached_paths_' num2str(numPaths) '/f' num2str(i) '.txt'], 'w');
         end
         fprintf(fwid, '%s\t1\t0\t0\t0\t0\n', filesInPath(i).name);
     end
@@ -383,7 +383,7 @@ function define_params
         if ~files
             imgFilter = @(d) isempty(regexp(d.name,'CROP_CAM')) && isempty(regexp(d.name,'UNCROP_CAM')) && isempty(regexp(d.name,'TRIPLETS')) && isempty(regexp(d.name,'REJECTS')); 
             disp('Searching for PNGs...')
-            if strfind(s, '\')
+            if contains(s, '\')
                 files = rdir([s '**\*.png'], imgFilter, s);
             else
                 files = rdir([s '**/*.png'], imgFilter, s);

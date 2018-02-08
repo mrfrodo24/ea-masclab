@@ -12,6 +12,7 @@ disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 disp('%%%%%%%%%%% WELCOME TO THE CP3G MASC ANALYTICS SUITE %%%%%%%%%%%')
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 fprintf('\n')
+% TODO Ensure that cache and cache/gen_params exist
 
 
 %% PRE-PROCESSING
@@ -22,7 +23,8 @@ clear; % Use this to clear all the pre_processing data since we're just
        % going to load it into a "settings" struct.
 
 % Load the parameters as chosen by user in pre_processing
-load_settings;
+[settings, selectedPath] = load_settings();
+if selectedPath >= 0, CACHED_PATH_SELECTION = selectedPath; end
 
 
 %% SCAN AND CROP
@@ -72,7 +74,8 @@ end
 %   B) Run default processing on flakes
 %   C) Redefine image processing parameter(s)
 %   D) Output statistics
-%   E) Save and exit program
+%   E) Resync images in selected cached path
+%   F) Save and exit program
 
 disp('%%%%%%%%%% CP3G MASCLAB ANALYTICS %%%%%%%%%%');
 fprintf('\n');
@@ -122,7 +125,8 @@ while 1 % Executes until user choose "Save and Quit" from Menu
         pre_processing();
 
         % Load the parameters as chosen by user in pre_processing
-        load_settings;
+        [settings, selectedPath] = load_settings();
+        if selectedPath >= 0, CACHED_PATH_SELECTION = selectedPath; end
         clearvars -except settings CACHED_PATH_SELECTION
         
         fprintf('\n')
@@ -156,6 +160,29 @@ while 1 % Executes until user choose "Save and Quit" from Menu
         
         fprintf('\n')
         user_choice = 'menu';
+        
+    case 'sync_cached_path'
+        disp('%%%%%%%%%%% SYNC UNCROPPED IMAGES %%%%%%%%%%%')
+        fprintf('\n');
+        disp(['About to sync uncropped images in ' settings.pathToFlakes '!'])
+        fprintf('You have 5 seconds to abort... (Ctrl+C)\n');
+        pause(2)
+        fprintf('3...');
+        pause(1)
+        fprintf('2...');
+        pause(1)
+        fprintf('1...');
+        pause(1)
+        
+        fprintf('\n\nSyncing...\n');
+        imgsAdded = sync_cached_path(settings);
+        
+        fprintf('\nDone! %s uncropped images were cached', imgsAdded);
+        if imgsAdded
+            fprintf(' and are ready to be run through Scan & Crop.\n\n');
+        else
+            fprintf('.\n\n');
+        end
         
     case 'save_and_quit'
         
