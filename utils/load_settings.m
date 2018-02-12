@@ -1,19 +1,23 @@
-function [ settings, CACHED_PATH_SELECTION ] = load_settings()
+function [ settings, selection, define ] = load_settings()
 %LOAD_SETTINGS load cp3g-masclab settings
 %
-% Use optional setting to pre-select a cached path for processing
+%   Prompts user to select a cached path to load settings from/into
+%
 settings = struct;
-if exist('CACHED_PATH_SELECTION', 'var')
-    load(['cache/cached_paths_' num2str(CACHED_PATH_SELECTION) '/last_parameters.mat']) %#ok<NODEF>
+define = 0;
+[selection_id, selection_path] = user_select_cachedpath();
+last_params = ['cache/cached_paths_' num2str(selection_id) '/last_parameters.mat'];
+if ~exist(last_params, 'file')
+    fprintf(['WARNING! Parameters need to be defined!\n' ...
+        'The file %s was not found.\n'], ...
+        last_params);
+    define = 1;
 else
-    load('cache/gen_params/last_parameters.mat')
-    if exist('CACHED_PATH_SELECTION', 'var')
-        load(['cache/cached_paths_' num2str(CACHED_PATH_SELECTION) '/last_parameters.mat']) %#ok<NODEF>
-    else
-        CACHED_PATH_SELECTION = -1;
-    end
+    load(last_params)
+    fprintf('Selected path to flakes: %s\n\n', settings.pathToFlakes);
 end
 
-fprintf('Selected path to flakes: %s\n\n', settings.pathToFlakes);
+selection.id = selection_id;
+selection.path = selection_path;
 
 end

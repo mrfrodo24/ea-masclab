@@ -1,64 +1,71 @@
-function pre_processing()
+function [settings, selection] = pre_processing(varargin)
 %PRE_PROCESSING Summary of this function goes here
-%   Detailed explanation goes here
+%   Accepts up to 1 argument
+%   @param <int> preselected cached path (-1 if no preselection)
 
-% ADD ALL NECESSARY PATHS (REQUIRED)
+%% ADD ALL NECESSARY PATHS (REQUIRED)
 addpath(genpath('./modules'))
 addpath(genpath('./data'))
 addpath(genpath('./export'))
 addpath(genpath('./cache'))
 addpath(genpath('./utils'))
 
-% First, try and load existing parameters. These will be in the same
-% directory. If they do exist, prompt user to use these values, set new
-% ones, or use some of them (i.e. load them, but allow user to re-specify
-% any of them)
-if exist('cache/gen_params/last_parameters.mat','file')
-    s = input(['Found record of previous processing parameters.\n' ...
-            'Would you like to (1) load the parameters and continue,\n(2)' ...
-            ' load the parameters but change some before continuing, or\n(3)' ...
-            ' do not load the parameters and define all of them on your own?' ...
-            ' (1,2,3): '], 's');
-    while isempty(s) || length(s) > 1 || (s ~= '1' && s ~= '2' && s ~= '3')
-        s = input('You must choose option 1, 2, or 3: ', 's');
-    end
+%% LOAD SETTINGS IF PRESELECTED
+if nargin == 1 && varargin{1} > 0
+    load(['cache/cached_paths_' num2str(varargin{1}) '/last_parameters.mat'], ...
+        'settings', 'CACHED_PATH_SELECTION')
+    fprintf('Selected path to flakes: %s\n\n', settings.pathToFlakes);
+    selection = CACHED_PATH_SELECTION;  %#ok<SHVAI>
+    return;
+end
     
-    if s == '1'
-        % User chose to do nothing, so just refresh the cache and return
-        [settings, selectedPath] = load_settings(); % Load the settings (either from gen_params or SELECTED_CACHED_PATH)
-        if selectedPath >= 0, CACHED_PATH_SELECTION = selectedPath; end
-        cacheSettings; % Cache the SELECTED_CACHED_PATH to gen_params and the selected path
-        return;
-        
-    elseif s == '2'
-        [settings, selectedPath] = load_settings();
-        if selectedPath >= 0, CACHED_PATH_SELECTION = selectedPath; end
-        settingsToVariables;
-        redefine = 1; %#ok<*NASGU>
-        
-    else % s == '3'
-        define = 1;
-        
+
+%% INIT SHARED VARS
+CACHED_PATHS_TXT = 'cache/cached_paths.txt';
+
+%% MAIN
+
+% Prompt user to select a cached_path if a cached_paths.txt file has been made
+if exist(CACHED_PATHS_TXT,'file')
+    [settings, selection, define] = load_settings();
+    if ~define
+        fprintf('Found previous set of processing parameters!\n');
+        s = input('Would you like to change some parameters before continuing (Y/n): ', 's');
+        while isempty(s) || length(s) > 1 || (s ~= 'Y' && s ~= 'n')
+            s = input('Please type ''Y'' or ''n'': ', 's');
+        end
+        fprintf('\n');
+
+        if s == 'n'
+            return;
+        else
+            settingsToVariables;
+            redefine = 1; %#ok<*NASGU>
+        end
+    else
+        pathToFlakes = selection.path;
     end
+    selection = selection.id;
 else
     define = 1;
+    selection = 1; % User is running for the first time, so will be the first cached_path
 end
 clear s
 
-% Check if user chose to redefine existing parameters, define new ones, or
+% Check if user chose to redefine existing parameters, or
 % has to define new ones because there are no existing parameters
-if exist('redefine','var')
+if exist('redefine','var') && redefine
     fprintf(['You chose to redefine some of the parameters from the existing\n' ...
         'set that was loaded. You will be prompted to change each of the\n' ...
         'parameters. To keep the current value when prompted, just hit [Enter].\n'])
     disp('%%% RE-DEFINE PARAMETERS %%%')
-    define_params
+    define_params()
     disp('%%% END RE-DEFINE PARAMETERS %%%')
     clear redefine
     
-elseif exist('define','var')
+elseif exist('define','var') && define
     disp('%%% DEFINE PARAMETERS %%%')
-    define_params
+    define_params()
     disp('%%% END DEFINE PARAMETERS %%%')
     clear define
     
@@ -69,7 +76,7 @@ fprintf('\n')
 % to proceed
 s = 'n';
 while s == 'n'
-    disp('%%% FINAL LIST OF PARAMETERS %%%')
+    disp('%%%%%%%%%%%%%%%%%%%%%%% LIST OF PARAMETERS %%%%%%%%%%%%%%%%%%%%%%%%')
     fprintf('       pathToFlakes: %s\n', pathToFlakes)
     fprintf('          datestart: %s\n', datestr(datestart))
     fprintf('            dateend: %s\n', datestr(dateend))
@@ -98,7 +105,8 @@ while s == 'n'
     fprintf('         cameraName: %s\n', cameraName)
     fprintf('     rescanOriginal: %i\n', rescanOriginal)
     fprintf('      skipProcessed: %i\n', skipProcessed)
-    fprintf('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n')
+    fprintf(['%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%' ...
+             '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n'])
     s = input('Would you like to save these parameters and continue [Y], or go back and change some [n]? (Y/n): ', 's');
     while isempty(s) || (length(s) > 1 || (s ~= 'Y' && s ~= 'n'))
         disp('Please type ''Y'' or ''n''.')
@@ -106,7 +114,7 @@ while s == 'n'
     end
     if s == 'n'
         disp('%%% RE-DEFINE PARAMETERS %%%')
-        define_params
+        define_params()
         disp('%%% END RE-DEFINE PARAMETERS %%%')
     end
 end
@@ -147,14 +155,14 @@ mascImgRegPattern = [ ...
 if ~isempty(filesInPath)
     fprintf('Caching PNG files for the specified pathToFlakes...');
     % Get number of paths already cached
-    if exist('cache/cached_paths.txt', 'file')
-        numPaths = length(strfind(fileread('cache/cached_paths.txt'), 'Path = "')) + 1;
+    if exist(CACHED_PATHS_TXT, 'file')
+        numPaths = length(strfind(fileread(CACHED_PATHS_TXT), 'Path = "')) + 1;
     else
         numPaths = 1; % Actually 0, but we set to 1 so the index starts at 1
     end
     
     % Add new path to cached_paths    
-    fwid = fopen('cache/cached_paths.txt','a');
+    fwid = fopen(CACHED_PATHS_TXT,'a');
     fprintf(fwid, 'Path = "%s"\n', pathToFlakes);
     % Set which txt file the path will point to
     fprintf(fwid, 'Cache Dir = "%s"\n\n', ['cache/cached_paths_' num2str(numPaths)]);
@@ -191,16 +199,10 @@ disp('Caching these parameters...')
 cacheSettings;
 
     function cacheSettings
-        % Get selected cached path
-        paths = fileread('cache/cached_paths.txt');
-        foundpath = strfind(paths, ['"' settings.pathToFlakes '"']);
-        cachedpath = strfind(paths(foundpath:end), 'cached_paths_'); cachedpath = cachedpath(1) - 1;
-        endcachedpath = strfind(paths(foundpath+cachedpath:end), '"'); endcachedpath = endcachedpath(1) - 1;
-        CACHED_PATH_SELECTION = str2num(paths(foundpath+cachedpath+13:foundpath+cachedpath+endcachedpath-1));
-
+        CACHED_PATH_SELECTION = selection;
         clearvars -except settings CACHED_PATH_SELECTION
         save(['cache/cached_paths_' num2str(CACHED_PATH_SELECTION) '/last_parameters.mat'])
-        save('cache/gen_params/last_parameters.mat')
+        selection = CACHED_PATH_SELECTION;
     end
 
     function [settings] = paramsAsStruct
@@ -368,8 +370,8 @@ function define_params
     filesInPath = [];
     if ~isempty(s)
         % First, check if user provided path is already in cached_paths
-        if exist('cache/cached_paths.txt', 'file')
-            if ~isempty(strfind(fileread('cache/cached_paths.txt'), ['"' s '"']))
+        if exist(CACHED_PATHS_TXT, 'file')
+            if ~contains(fileread(CACHED_PATHS_TXT'), ['"' s '"'])
                 % Path has been used before, accept this input
                 files = 1;
                 disp('Path found in cache! Okay to use again. Continuing...')
@@ -406,8 +408,8 @@ function define_params
                 s = input('Set pathToFlakes to: ', 's');
             end
             if ~isempty(s)
-                if exist('cache/cached_paths.txt', 'file')
-                    if ~isempty(strfind(fileread('cache/cached_paths.txt'), ['"' s '"']))
+                if exist(CACHED_PATHS_TXT, 'file')
+                    if ~contains(fileread(CACHED_PATHS_TXT), ['"' s '"'])
                         % Path has been used before, accept this input
                         files = 1;
                         disp('Path found in cache! Okay to use again. Continuing...')
@@ -421,7 +423,7 @@ function define_params
                 if ~files
                     imgFilter = @(d) isempty(regexp(d.name,'CROP_CAM')) && isempty(regexp(d.name,'UNCROP_CAM')) && isempty(regexp(d.name,'TRIPLETS')) && isempty(regexp(d.name,'REJECTS')); %#ok<*RGXP1>
                     disp('Searching for PNGs...')
-                    if strfind(s, '\')
+                    if contains(s, '\')
                         files = rdir([s '**\*.png'], imgFilter, s);
                     else
                         files = rdir([s '**/*.png'], imgFilter, s);
@@ -713,7 +715,7 @@ function define_params
     end
     if exist('applyTopDiscardToCams', 'var')
         cur = applyTopDiscardToCams;
-    else cur = 0; 
+    else, cur = 0; 
     end
     applyTopDiscardToCams = applyDiscardToCams('Top', cur);
     if exist('bottomDiscard', 'var')
@@ -739,7 +741,7 @@ function define_params
     end
     if exist('applyBotDiscardToCams', 'var')
         cur = applyBotDiscardToCams;
-    else cur = 0; 
+    else, cur = 0; 
     end
     applyBotDiscardToCams = applyDiscardToCams('Bot', cur);
     if exist('leftDiscard', 'var')
@@ -765,7 +767,7 @@ function define_params
     end
     if exist('applyLeftDiscardToCams', 'var')
         cur = applyLeftDiscardToCams;
-    else cur = 0; 
+    else, cur = 0; 
     end
     applyLeftDiscardToCams = applyDiscardToCams('Left', cur);
     if exist('rightDiscard', 'var')
@@ -791,7 +793,7 @@ function define_params
     end
     if exist('applyRightDiscardToCams', 'var')
         cur = applyRightDiscardToCams;
-    else cur = 0; 
+    else, cur = 0; 
     end
     applyRightDiscardToCams = applyDiscardToCams('Right', cur);
     

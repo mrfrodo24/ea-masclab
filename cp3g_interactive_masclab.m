@@ -12,19 +12,20 @@ disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 disp('%%%%%%%%%%% WELCOME TO THE CP3G MASC ANALYTICS SUITE %%%%%%%%%%%')
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 fprintf('\n')
-% TODO Ensure that cache and cache/gen_params exist
+% Ensure that cache and cache/gen_params exist
+if ~isdir('cache'), mkdir('cache'); mkdir('cache/gen_params'); 
+elseif ~isdir('cache/gen_params'), mkdir('cache/gen_params');
+end
 
 
 %% PRE-PROCESSING
 % Call the pre_processing function
 disp('%%%%%%%%%%%%%% PRE-PROCESSING %%%%%%%%%%%%%%')
-pre_processing();
-clear; % Use this to clear all the pre_processing data since we're just
-       % going to load it into a "settings" struct.
-
-% Load the parameters as chosen by user in pre_processing
-[settings, selectedPath] = load_settings();
-if selectedPath >= 0, CACHED_PATH_SELECTION = selectedPath; end
+if exist('CACHED_PATH_SELECTION','var')
+    preselected = CACHED_PATH_SELECTION;
+else, preselected = -1;
+end
+[settings, CACHED_PATH_SELECTION] = pre_processing(preselected);
 
 
 %% SCAN AND CROP
@@ -122,12 +123,7 @@ while 1 % Executes until user choose "Save and Quit" from Menu
     case 'redefine_processing_params'
         % Call the pre_processing function
         disp('%%%%%%%%%% PRE-PROCESSING %%%%%%%%%%')
-        pre_processing();
-
-        % Load the parameters as chosen by user in pre_processing
-        [settings, selectedPath] = load_settings();
-        if selectedPath >= 0, CACHED_PATH_SELECTION = selectedPath; end
-        clearvars -except settings CACHED_PATH_SELECTION
+        [settings, CACHED_PATH_SELECTION] = pre_processing();
         
         fprintf('\n')
         user_choice = 'menu';
@@ -161,28 +157,34 @@ while 1 % Executes until user choose "Save and Quit" from Menu
         fprintf('\n')
         user_choice = 'menu';
         
-    case 'sync_cached_path'
+    case 'sync_cachedpath'
         disp('%%%%%%%%%%% SYNC UNCROPPED IMAGES %%%%%%%%%%%')
         fprintf('\n');
+        
+        [settings, selection] = load_settings();
+        CACHED_PATH_SELECTION = selection.id;
+        fprintf('\n');
+        
         disp(['About to sync uncropped images in ' settings.pathToFlakes '!'])
         fprintf('You have 5 seconds to abort... (Ctrl+C)\n');
         pause(2)
-        fprintf('3...');
+        fprintf('3...\n');
         pause(1)
-        fprintf('2...');
+        fprintf('2...\n');
         pause(1)
         fprintf('1...');
         pause(1)
         
         fprintf('\n\nSyncing...\n');
-        imgsAdded = sync_cached_path(settings);
+        imgsAdded = sync_cachedpath(CACHED_PATH_SELECTION, settings);
         
-        fprintf('\nDone! %s uncropped images were cached', imgsAdded);
+        fprintf('\nDone! %i uncropped images were cached', imgsAdded);
         if imgsAdded
             fprintf(' and are ready to be run through Scan & Crop.\n\n');
         else
             fprintf('.\n\n');
         end
+        user_choice = 'menu';
         
     case 'save_and_quit'
         

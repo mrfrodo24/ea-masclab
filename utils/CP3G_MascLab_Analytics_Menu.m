@@ -37,7 +37,7 @@ switch(str2num(s)) %#ok<ST2NM>
         user_input = 'export_stats';
         
     case 5
-        user_input = 'sync_cached_path';
+        user_input = 'sync_cachedpath';
         
     case 6
         user_input = 'save_and_quit';
