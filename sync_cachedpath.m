@@ -15,7 +15,7 @@ cachedPath = ['cache/cached_paths_' num2str(cachedPath) '/'];
 %% Get list of files
 imgFilter = @(d) isempty(regexp(d.name,'CROP_CAM')) && isempty(regexp(d.name,'UNCROP_CAM')) && isempty(regexp(d.name,'TRIPLETS')) && isempty(regexp(d.name,'REJECTS')); 
 disp('Searching for PNGs...')
-if contains(settings.pathToFlakes, '\')
+if strfind(settings.pathToFlakes, '\')
     files = rdir([settings.pathToFlakes '**\*.png'], imgFilter, settings.pathToFlakes);
 else
     files = rdir([settings.pathToFlakes '**/*.png'], imgFilter, settings.pathToFlakes);

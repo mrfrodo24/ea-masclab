@@ -371,7 +371,7 @@ function define_params
     if ~isempty(s)
         % First, check if user provided path is already in cached_paths
         if exist(CACHED_PATHS_TXT, 'file')
-            if ~contains(fileread(CACHED_PATHS_TXT'), ['"' s '"'])
+            if ~strfind(fileread(CACHED_PATHS_TXT'), ['"' s '"'])
                 % Path has been used before, accept this input
                 files = 1;
                 disp('Path found in cache! Okay to use again. Continuing...')
@@ -385,7 +385,7 @@ function define_params
         if ~files
             imgFilter = @(d) isempty(regexp(d.name,'CROP_CAM')) && isempty(regexp(d.name,'UNCROP_CAM')) && isempty(regexp(d.name,'TRIPLETS')) && isempty(regexp(d.name,'REJECTS')); 
             disp('Searching for PNGs...')
-            if contains(s, '\')
+            if strfind(s, '\')
                 files = rdir([s '**\*.png'], imgFilter, s);
             else
                 files = rdir([s '**/*.png'], imgFilter, s);
@@ -409,7 +409,7 @@ function define_params
             end
             if ~isempty(s)
                 if exist(CACHED_PATHS_TXT, 'file')
-                    if ~contains(fileread(CACHED_PATHS_TXT), ['"' s '"'])
+                    if ~strfind(fileread(CACHED_PATHS_TXT), ['"' s '"'])
                         % Path has been used before, accept this input
                         files = 1;
                         disp('Path found in cache! Okay to use again. Continuing...')
@@ -423,7 +423,7 @@ function define_params
                 if ~files
                     imgFilter = @(d) isempty(regexp(d.name,'CROP_CAM')) && isempty(regexp(d.name,'UNCROP_CAM')) && isempty(regexp(d.name,'TRIPLETS')) && isempty(regexp(d.name,'REJECTS')); %#ok<*RGXP1>
                     disp('Searching for PNGs...')
-                    if contains(s, '\')
+                    if strfind(s, '\')
                         files = rdir([s '**\*.png'], imgFilter, s);
                     else
                         files = rdir([s '**/*.png'], imgFilter, s);

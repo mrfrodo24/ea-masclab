@@ -7,7 +7,7 @@ masc.date = datenum(filename(1:19), 'yyyy.mm.dd_HH.MM.SS');
 imageIdStart = strfind(filename, 'flake_') + 6;
 imageIdEnd = imageIdStart + strfind(filename(imageIdStart:end), '_') - 2;
 imageIdEnd = imageIdEnd(1);
-if contains(filename(imageIdStart:imageIdEnd), '.')
+if strfind(filename(imageIdStart:imageIdEnd), '.')
     particleIdEnd = imageIdEnd;
     imageIdEnd = imageIdStart + strfind(filename(imageIdStart:imageIdEnd), '.') - 2;
     particleIdStart = imageIdEnd + 2;
