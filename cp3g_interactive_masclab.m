@@ -25,7 +25,8 @@ if exist('CACHED_PATH_SELECTION','var')
     preselected = CACHED_PATH_SELECTION;
 else, preselected = -1;
 end
-[settings, CACHED_PATH_SELECTION] = pre_processing(preselected);
+[settings, user_selection] = pre_processing(preselected);
+CACHED_PATH_SELECTION = user_selection.id;
 
 
 %% SCAN AND CROP
@@ -123,7 +124,8 @@ while 1 % Executes until user choose "Save and Quit" from Menu
     case 'redefine_processing_params'
         % Call the pre_processing function
         disp('%%%%%%%%%% PRE-PROCESSING %%%%%%%%%%')
-        [settings, CACHED_PATH_SELECTION] = pre_processing();
+        [settings, user_selection] = pre_processing();
+        CACHED_PATH_SELECTION = user_selection.id;
         
         fprintf('\n')
         user_choice = 'menu';
@@ -161,19 +163,14 @@ while 1 % Executes until user choose "Save and Quit" from Menu
         disp('%%%%%%%%%%% SYNC UNCROPPED IMAGES %%%%%%%%%%%')
         fprintf('\n');
         
-        [settings, selection] = load_settings();
-        CACHED_PATH_SELECTION = selection.id;
-        fprintf('\n');
-        
-        disp(['About to sync uncropped images in ' settings.pathToFlakes '!'])
-        fprintf('You have 5 seconds to abort... (Ctrl+C)\n');
-        pause(2)
-        fprintf('3...\n');
-        pause(1)
-        fprintf('2...\n');
-        pause(1)
-        fprintf('1...');
-        pause(1)
+        disp(['About to sync uncropped images in ' settings.pathToFlakes])
+        fprintf(['Note: You can always revert a sync afterwards. The old cache files will be\n' ...
+            '\tkept in cache/cached_paths_' CACHED_PATH_SELECTION '/ with the prefix "sync_bak_" on the old files.\n\n']);
+
+        fprintf('You have 5 seconds to abort... (Ctrl+C)\n'); pause(2); 
+        fprintf('3...\n'); pause(1); 
+        fprintf('2...\n'); pause(1); 
+        fprintf('1...'); pause(1); 
         
         fprintf('\n\nSyncing...\n');
         imgsAdded = sync_cachedpath(CACHED_PATH_SELECTION, settings);
@@ -182,7 +179,7 @@ while 1 % Executes until user choose "Save and Quit" from Menu
         if imgsAdded
             fprintf(' and are ready to be run through Scan & Crop.\n\n');
         else
-            fprintf('.\n\n');
+            fprintf('. Everything up to date.\n\n');
         end
         user_choice = 'menu';
         
