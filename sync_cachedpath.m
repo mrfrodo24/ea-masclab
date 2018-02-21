@@ -72,7 +72,7 @@ for i = 1:numCacheFiles
             % Also advance newf if they were the same, avoids duplicates
             if newf_s.date == oldf_s.date ...
                && newf_s.imageId == oldf_s.imageId ...
-               && newf_s.camId == newf_s.camId
+               && newf_s.camId == oldf_s.camId
                 j = j + 1; 
             end
             oldLine = fgets(fid_old);

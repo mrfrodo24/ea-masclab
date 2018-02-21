@@ -165,7 +165,7 @@ while 1 % Executes until user choose "Save and Quit" from Menu
         
         disp(['About to sync uncropped images in ' settings.pathToFlakes])
         fprintf(['Note: You can always revert a sync afterwards. The old cache files will be\n' ...
-            '\tkept in cache/cached_paths_' CACHED_PATH_SELECTION '/ with the prefix "sync_bak_" on the old files.\n\n']);
+            '\tkept in cache/cached_paths_' num2str(CACHED_PATH_SELECTION) '/ with the prefix "sync_bak_" on the old files.\n\n']);
 
         fprintf('You have 5 seconds to abort... (Ctrl+C)\n'); pause(2); 
         fprintf('3...\n'); pause(1); 
