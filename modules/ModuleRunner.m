@@ -1,5 +1,5 @@
 function [settings] = ModuleRunner( modules, settings )
-%MODULERUNNER Executes CP3G MascLab module processing on all cropped flakes.
+%MODULERUNNER Executes EA MascLab module processing on all cropped flakes.
 %   Detailed explanation goes here
 
 

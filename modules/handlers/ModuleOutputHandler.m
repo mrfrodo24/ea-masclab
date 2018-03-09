@@ -15,7 +15,7 @@ function [ indices ] = ModuleOutputHandler( whichModule, verifyModuleHandler )
 %                 Module will go 
 
 % When your module is implemented, you may add it as a conditional here so
-% that it is accepted by CP3G Masc Analytics. 
+% that it is accepted by EA Masc Analytics. 
 if verifyModuleHandler
     if strcmp(whichModule, 'AspectRatio') || ...
        strcmp(whichModule, 'AvgIntensity') || ...

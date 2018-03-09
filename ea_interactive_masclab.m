@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%% CP3G INTERACTIVE MASCLAB %%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%% EA INTERACTIVE MASCLAB %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % This script is the controller for the command-line interface that will be
@@ -9,7 +9,7 @@
 % functions or parameters.
 %
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-disp('%%%%%%%%%%% WELCOME TO THE CP3G MASC ANALYTICS SUITE %%%%%%%%%%%')
+disp('%%%%%%%%%%% WELCOME TO THE EA MASC ANALYTICS SUITE %%%%%%%%%%%')
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 fprintf('\n')
 % Ensure that cache and cache/gen_params exist
@@ -79,7 +79,7 @@ end
 %   E) Resync images in selected cached path
 %   F) Save and exit program
 
-disp('%%%%%%%%%% CP3G MASCLAB ANALYTICS %%%%%%%%%%');
+disp('%%%%%%%%%% EA MASCLAB ANALYTICS %%%%%%%%%%');
 fprintf('\n');
 
 user_choice = 'menu';
@@ -87,7 +87,7 @@ while 1 % Executes until user choose "Save and Quit" from Menu
     switch(user_choice)
     
     case 'menu'
-        user_choice = CP3G_MascLab_Analytics_Menu;
+        user_choice = EA_MascLab_Analytics_Menu;
         
     case 'select_modules'
         disp('%%%%% MODULAR IMAGE PROCESSING %%%%%')

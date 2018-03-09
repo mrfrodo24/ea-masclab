@@ -16,7 +16,7 @@ This suite of Matlab functions and scripts processes image sets obtained from a 
     Our research group has servers with upwards of 50TB of storage available.  *You can expect to need on average about **50 GB per winter season of data**.*
 1. Open Matlab and navigate your Matlab working directory to the ea-masclab repo you just cloned.
 
-1. Run `cp3g_interactive_masclab` in the command window
+1. Run `ea_interactive_masclab` in the command window
 
 1. You will be prompted first to set where the image set is located on the machine.  From there, continue to follow the instructions for defining other user settings.  When you get to the end, enter `Y` to save the settings and continue.
 

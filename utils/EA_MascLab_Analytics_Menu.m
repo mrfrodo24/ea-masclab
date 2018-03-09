@@ -1,5 +1,5 @@
-function [ user_input ] = CP3G_MascLab_Analytics_Menu
-%CP3G_MASCLAB_ANALYTICS_MENU Displays main menu, verifies user input,
+function [ user_input ] = EA_MascLab_Analytics_Menu
+%EA_MASCLAB_ANALYTICS_MENU Displays main menu, verifies user input,
 %returns command.
 %   Detailed explanation goes here
 

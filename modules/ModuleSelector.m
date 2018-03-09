@@ -1,5 +1,5 @@
 function [modules] = ModuleSelector ( modules, settings )
-% MODULESELECTOR Allow user to select the modules they wish to run in CP3G MascLab.
+% MODULESELECTOR Allow user to select the modules they wish to run in EA MascLab.
 %
 %   SUMMARY:
 %       Let users pick the modules they want to run.

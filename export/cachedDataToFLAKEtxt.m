@@ -3,7 +3,7 @@ function cachedDataToFLAKEtxt( settings )
 %   
 %   SUMMARY:
 %       The Snowflake Database (Snowflake DB/SDB) is a software product
-%       created by the CP3G research group to compile data from multiple
+%       created by the EA research group to compile data from multiple
 %       meteorological instruments into one centralized database. The
 %       records from the various instruments can be cross-referenced
 %       according to datetime. Currently, the supported data sources are

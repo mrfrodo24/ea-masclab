@@ -61,7 +61,7 @@ dependencies = {};
 inputs = {};
 
 % When your module is implemented, you may add it as a conditional here so
-% that it is accepted by CP3G Masc Analytics. Remember that you'll also
+% that it is accepted by EA Masc Analytics. Remember that you'll also
 % have to do this in ModuleOutputHandler, once the module is implemented
 % there as well.
 if usage == 1 

@@ -7,5 +7,5 @@ pre_processing
 
 % Instructions for using suite
 disp('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-disp('Command to run suite: cp3g_interactive_masclab')
+disp('Command to run suite: ea_interactive_masclab')
 fprintf('\n')

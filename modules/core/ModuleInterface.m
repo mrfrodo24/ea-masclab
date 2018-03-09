@@ -1,7 +1,7 @@
 function [ outputs ] = ModuleInterface( img_path, bounds, topLeftCoords, varargin )
 %ModuleInterface Serves as a model function for all future modules
 %   SUMMARY:
-%       In the CP3G MASC Analytics framework, modules are defined as such:
+%       In the EA MASC Analytics framework, modules are defined as such:
 %
 %       Q: What is a module?
 %       A: A set of instructions for processing a single image of a single

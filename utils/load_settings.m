@@ -1,5 +1,5 @@
 function [ settings, selection, define ] = load_settings()
-%LOAD_SETTINGS load cp3g-masclab settings
+%LOAD_SETTINGS load ea-masclab settings
 %
 %   Prompts user to select a cached path to load settings from/into
 %
