@@ -24,11 +24,11 @@ function [s, idx] = sort_masc_images(s)
 %% Masc comparison function
 % Returns -1 if s2 comes before s1. Otherwise 0.
 function [cmp] = mascCmp(s1, s2)
-	cmp = 0;
-	if s2.date < s1.date || ...
-	   (s2.date == s1.date && s2.imageId < s1.imageId) || ...
-	   (s2.imageId == s1.imageId && s2.camId < s1.camId) 
-		cmp = -1;
+    cmp = 0;
+    if s2.date < s1.date || ...
+       (s2.date == s1.date && s2.imageId < s1.imageId) || ...
+       (s2.imageId == s1.imageId && s2.camId < s1.camId) 
+	cmp = -1;
 	% elseif s2.date == s1.date && ...
 	%        s2.camId == s1.camId && ...
 	%        s2.imageId == s1.imageId && ...
@@ -42,19 +42,19 @@ end
 %% Sorting
 idx = [1:length(s)]';
 for i = 2:length(s)
-	cmp = mascCmp(s(i-1), s(i));
+cmp = mascCmp(s(i-1), s(i));
     if cmp < 0
-		goBack = i - 2;
+	goBack = i - 2;
         if goBack < 1
-			s(1:i) = [s(i); s(1:i-1)];
-			idx(1:i) = [idx(i); idx(1:i-1)];
-			continue;
+	    s(1:i) = [s(i); s(1:i-1)];
+	    idx(1:i) = [idx(i); idx(1:i-1)];
+	    continue;
         end
-		while mascCmp(s(goBack), s(i)) < 0
-			goBack = goBack - 1;
-		end
-		s(goBack:i) = [s(goBack); s(i); s(goBack+1:i-1)];
-		idx(goBack:i) = [idx(goBack); idx(i); idx(goBack+1:i-1)];
+	while mascCmp(s(goBack), s(i)) < 0
+	    goBack = goBack - 1;
+	end
+	s(goBack:i) = [s(goBack); s(i); s(goBack+1:i-1)];
+	idx(goBack:i) = [idx(goBack); idx(i); idx(goBack+1:i-1)];
     end
 end
 
