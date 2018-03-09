@@ -74,9 +74,8 @@ for i = 1:numCacheFiles
         oldCounter = oldCounter + 1;
     end
     
-    listEnd = length(fileList{1});
     for k = 1:6
-        oldCache(oldCounter:listEnd,k) = fileList{k}(:);
+        oldCache(oldCounter-j:oldCounter-1,k) = fileList{k}(:);
     end
     fprintf('\n');
 end
@@ -85,6 +84,7 @@ fprintf('Sorting old image set...');
 unsortedOldList = cell2mat(oldList(~cellfun('isempty', oldList)));
 % Now sort it
 [oldList, sortedOldIdx] = sort_masc_images(unsortedOldList);
+oldDirectories = oldDirectories(sortedOldIdx);
 disp('done!')
 
 %% Get list of files
@@ -107,6 +107,7 @@ end
 fprintf('Sorting new image set...');
 unsortedNewList = cell2mat(newList(~cellfun('isempty', newList)));
 [newList, sortedNewIdx] = sort_masc_images(unsortedNewList);
+newDirectories = newDirectories(sortedNewIdx);
 disp('done!')
 
 %% Open new file sync.txt
@@ -133,11 +134,11 @@ while i <= oldListLength
     ja = sortedNewIdx(j);
     
     if j <= length(files)
-        newf_s = newList{ja};
-        newf_dir = newDirectories{ja};
+        newf_s = newList(j);
+        newf_dir = newDirectories{j};
     end
-    oldf_s = oldList{ia};
-    oldf_dir = oldDirectories{ia};
+    oldf_s = oldList(i);
+    oldf_dir = oldDirectories{i};
     
     cmp = mascCmp(newf_s, oldf_s);
     if j > length(files) || cmp <= 0
@@ -174,9 +175,8 @@ while i <= oldListLength
 end
 
 while j <= length(files)
-    ja = sortedNewIdx(j);
-    newf = regexp(files(ja).name, settings.mascImgRegPattern, 'match'); newf = newf{1};
-    newf_dir = newDirectories{ja};
+    newf = regexp(files(sortedNewIdx(j)).name, settings.mascImgRegPattern, 'match'); newf = newf{1};
+    newf_dir = newDirectories{j};
     fprintf(fid_sync, '%s\t1\t0\t0\t0\t0\n', [newf_dir filesep newf]);
     totalWritten = totalWritten + 1;
            
