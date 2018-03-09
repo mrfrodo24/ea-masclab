@@ -15,7 +15,7 @@ if nargin == 1 && varargin{1} > 0
     load(['cache/cached_paths_' num2str(varargin{1}) '/last_parameters.mat'], ...
         'settings', 'CACHED_PATH_SELECTION')
     fprintf('Selected path to flakes: %s\n\n', settings.pathToFlakes);
-    selection = CACHED_PATH_SELECTION;  %#ok<SHVAI>
+    selection = struct('id', num2str(varargin{1}), 'path', settings.pathToFlakes);
     return;
 end
     
