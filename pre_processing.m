@@ -15,7 +15,8 @@ if nargin == 1 && varargin{1} > 0
     load(['cache/cached_paths_' num2str(varargin{1}) '/last_parameters.mat'], ...
         'settings', 'CACHED_PATH_SELECTION')
     fprintf('Selected path to flakes: %s\n\n', settings.pathToFlakes);
-    selection = struct('id', num2str(varargin{1}), 'path', settings.pathToFlakes);
+    selection.id = num2str(varargin{1});
+    selection.path = settings.pathToFlakes;
     return;
 end
     
@@ -45,10 +46,9 @@ if exist(CACHED_PATHS_TXT,'file')
     else
         pathToFlakes = selection.path;
     end
-    selection = selection.id;
 else
     define = 1;
-    selection = 1; % User is running for the first time, so will be the first cached_path
+    selection.id = 1; % User is running for the first time, so will be the first cached_path
 end
 clear s
 
@@ -174,6 +174,7 @@ if ~isempty(filesInPath)
     end
     
     % Open a new cache file
+    numCacheFiles = 1;
     fwid = fopen(['cache/cached_paths_' num2str(numPaths) '/f1.txt'], 'w');
     for i = 1:length(filesInPath)
         if ~mod(i,500)
@@ -181,7 +182,8 @@ if ~isempty(filesInPath)
             % Assuming O(100) cropped flakes for each PNG, that would
             % result in O(50,000) records in each txt file.
             fclose(fwid);
-            fwid = fopen(['cache/cached_paths_' num2str(numPaths) '/f' num2str(i) '.txt'], 'w');
+            numCacheFiles = numCacheFiles + 1;
+            fwid = fopen(['cache/cached_paths_' num2str(numPaths) '/f' num2str(numCacheFiles) '.txt'], 'w');
         end
         fprintf(fwid, '%s\t1\t0\t0\t0\t0\n', filesInPath(i).name);
     end
@@ -199,10 +201,11 @@ disp('Caching these parameters...')
 cacheSettings;
 
     function cacheSettings
-        CACHED_PATH_SELECTION = selection;
+        CACHED_PATH_SELECTION = selection.id;
         clearvars -except settings CACHED_PATH_SELECTION
         save(['cache/cached_paths_' num2str(CACHED_PATH_SELECTION) '/last_parameters.mat'])
-        selection = CACHED_PATH_SELECTION;
+        selection.id = CACHED_PATH_SELECTION;
+        selection.path = settings.pathToFlakes;
     end
 
     function [settings] = paramsAsStruct
