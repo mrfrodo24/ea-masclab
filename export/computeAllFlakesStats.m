@@ -52,9 +52,11 @@ while exist([pathToCacheData cacheFile], 'file')
 
 	fprintf('Loading %s...', cacheFile);
 	load([pathToCacheData cacheFile])
-	fprintf('done!');
+	fprintf('done!\n');
+	fprintf('Computing stats...');
 
 	for i = 1 : length(subFlakes)
+
         if isempty(subFlakes{i,1})
             break;
         end
@@ -107,6 +109,8 @@ while exist([pathToCacheData cacheFile], 'file')
 		end	
 
 	end
+
+	fprintf('done!\n\n');
 
 	clear subFlakes
 	allflakes_counter = allflakes_counter + 1;
