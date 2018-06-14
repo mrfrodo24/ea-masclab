@@ -8,31 +8,39 @@ function [modules] = ModuleSelector ( modules, settings )
 
 %% Module Selection
 
-fprintf(['You will now be shown each available module... For each one,\n' ...
-    '\tindicate whether you would like to run it on the flakes within the\n' ...
-    '\tdate range you specified in pre-processing:\n\n']);
-disp('%%% MODULES %%%')
-% Loop backwards through modules cell array so we can remove elements from
-% the array as we go whenever user says they don't want to run a module.
-i = 1;
-while i <= length(modules)
-    s = input(['Would you like to run "', modules{i}, '" (y/n): '], 's');
-    while s ~= 'y' && s ~= 'n'
-        disp('Invalid input...')
+s = input('Would you like to run all models [y] or pick the modules to run [n]? ', 's');
+while s ~= 'y' && s ~= 'n'
+    disp('Invalid input...')
+    s = input('Type "y" to run all modules or "n" to select the ones to run: ', 's');
+end
+if s == 'n'
+    % Let user select the modules they want to run
+    fprintf(['You will now be shown each available module... For each one,\n' ...
+        '\tindicate whether you would like to run it on the flakes within the\n' ...
+        '\tdate range you specified in pre-processing:\n\n']);
+    disp('%%% MODULES %%%')
+    % Loop backwards through modules cell array so we can remove elements from
+    % the array as we go whenever user says they don't want to run a module.
+    i = 1;
+    while i <= length(modules)
         s = input(['Would you like to run "', modules{i}, '" (y/n): '], 's');
-    end
-    if s == 'n'
-        % User does not want to run the module, so remove it from the list
-        modules(i) = [];
-    else
-        i = i + 1;
+        while s ~= 'y' && s ~= 'n'
+            disp('Invalid input...')
+            s = input(['Would you like to run "', modules{i}, '" (y/n): '], 's');
+        end
+        if s == 'n'
+            % User does not want to run the module, so remove it from the list
+            modules(i) = [];
+        else
+            i = i + 1;
+        end
     end
 end
 
 %% Module Dependency Check
 % Essentially, we'll check if we need to reorder the module execution
 % order, which we would want to do so that modules which depend on another
-% are run after the other.
+% are run after their dependents.
 
 disp('Checking module dependencies defined in ModuleInputHandler')
 % Load the first goodSubFlakes, just to see if some data is already there
@@ -172,8 +180,7 @@ while i > 0
     end
     i = i - 1;
 end
-% Finished checking dependencies
-disp('Finished processing dependencies!')
+disp('Finished checking dependencies!')
 clear goodSubFlakes
 
 fprintf('\n');
