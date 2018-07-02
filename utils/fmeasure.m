@@ -199,12 +199,31 @@ switch upper(Measure)
         G = Gx.^2 + Gy.^2;
         FM = std2(G)^2;
         
-    case 'VOLA' % Vollath's correlation (Santos97)
+    case 'GAUSSDIFF'
+        GD = abs(Image - imgaussfilt(Image,3));
+        FM = mean2(GD);
+        
+    case 'VOLA'
         Image = double(Image);
         I1 = Image; I1(1:end-1,:) = Image(2:end,:);
         I2 = Image; I2(1:end-2,:) = Image(3:end,:);
-        Image = Image.*(I1-I2);
-        FM = mean2(Image);
+        FM = mean2(Image.*(I1-I2));
+        
+    case 'VOLA_RHODES' % Vollath's correlation (Santos97), square-root corrected by S. Rhodes (7/2/2018)
+        Image = double(Image);
+        I1 = Image; I1(1:end-1,:) = Image(2:end,:);
+        I2 = Image; I2(1:end-2,:) = Image(3:end,:);
+        I3 = Image.*(I1-I2);
+        FM = mean2(I3) / sqrt(mean2(Image));
+        
+    case 'NORVAR' % Normalized variance (Santos1997)
+        Image = double(Image);
+        meanBrightness = mean2(Image);
+        FM = mean2((Image - meanBrightness) .^ 2) / meanBrightness;
+        
+    case 'VAR' % Variance (Santos1997)
+        Image = double(Image);
+        FM = mean2((Image - mean2(Image)) .^ 2);
         
     case 'WAVS' %Sum of Wavelet coeffs (Yang2003)
         [C,S] = wavedec2(Image, 1, 'db6');

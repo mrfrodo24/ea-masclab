@@ -80,6 +80,11 @@ MASC_WRITE_STRING = [ ...
     '%s\t' ... % Roughness (Col. 23)
     '%s\t' ... % Corners
     '%s\t' ... % Concave Number
+    '%s\t' ... % Focus (Vola4 revised)
+    '%s\t' ... % Focus (Normalized variance)
+    '%s\t' ... % Focus (Variance)
+    '%s\t' ... % Focus (Gaussian Diff)
+    '%s\t' ... % Focus (Diff of Vola4 b/t Orig and Gauss)
     '\n' ... % END LINE
 ];
 
@@ -239,23 +244,28 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
             
             % Extract Flake variables (10/10/2016)
             % Have to load variables first to check if they're NaN or empty
-            num_pores = goodSubFlakes{j,9};
-            solidity = goodSubFlakes{j,10};
-            radial_variance = goodSubFlakes{j,11};
-            mean_intens = goodSubFlakes{j,13};
-            fractured = goodSubFlakes{j,14};
-            focus = goodSubFlakes{j,15};
-            max_diam = goodSubFlakes{j,16};
-            perim = goodSubFlakes{j,17};
-            xsec = goodSubFlakes{j,18};
-            req = goodSubFlakes{j,19};
-            complexity = goodSubFlakes{j,20};
-            aspectratio = goodSubFlakes{j,21};
-            roughness = goodSubFlakes{j,23};
-            corners = goodSubFlakes{j,24};
-            concave_num = goodSubFlakes{j,25};
-            fallspeed = goodSubFlakes{j,26};
-            flakeang = goodSubFlakes{j,29};
+            num_pores =         goodSubFlakes{j,9};
+            solidity =          goodSubFlakes{j,10};
+            radial_variance =   goodSubFlakes{j,11};
+            mean_intens =       goodSubFlakes{j,13};
+            fractured =         goodSubFlakes{j,14};
+            focus =             goodSubFlakes{j,15};
+            max_diam =          goodSubFlakes{j,16};
+            perim =             goodSubFlakes{j,17};
+            xsec =              goodSubFlakes{j,18};
+            req =               goodSubFlakes{j,19};
+            complexity =        goodSubFlakes{j,20};
+            aspectratio =       goodSubFlakes{j,21};
+            roughness =         goodSubFlakes{j,23};
+            corners =           goodSubFlakes{j,24};
+            concave_num =       goodSubFlakes{j,25};
+            fallspeed =         goodSubFlakes{j,26};
+            flakeang =          goodSubFlakes{j,29};
+            focus_vola_rev =    goodSubFlakes{j,30};
+            focus_norvar =      goodSubFlakes{j,31};
+            focus_variance =    goodSubFlakes{j,32};
+            focus_gaussdiff =   goodSubFlakes{j,33};
+            focus_gdiff_volarev = goodSubFlakes{j,34};
             
             if isempty(num_pores) || isnan(num_pores)
                 num_pores = '\N';
@@ -308,6 +318,21 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
             if isempty(fallspeed) || isnan(fallspeed)
                 fallspeed = '\N';
             end
+            if isempty(focus_vola_rev) || isnan(focus_vola_rev)
+                focus_vola_rev = '\N';
+            end
+            if isempty(focus_norvar) || isnan(focus_norvar)
+                focus_norvar = '\N';
+            end
+            if isempty(focus_variance) || isnan(focus_variance)
+                focus_variance = '\N';
+            end
+            if isempty(focus_gaussdiff) || isnan(focus_gaussdiff)
+                focus_gaussdiff = '\N';
+            end
+            if isempty(focus_gdiff_volarev) || isnan(focus_gdiff_volarev)
+                focus_gdiff_volarev = '\N';
+            end
             
             % Print to file
             fprintf(fwid, MASC_WRITE_STRING, ...
@@ -327,7 +352,7 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
                 num2str(aspectratio, '%.3f'), ...
                 num2str(complexity, '%.3f'), ...
                 num2str(flakeang, '%.2f'), ...
-                num2str(focus, '%.3f'), ...
+                num2str(focus, '%.2f'), ...
                 num2str(num_pores), ...
                 '\N', ... % No mean pore area
                 '\N', ... % No symmetry
@@ -337,7 +362,12 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
                 num2str(radial_variance, '%.3f'), ...
                 num2str(roughness, '%.3f'), ...
                 num2str(corners, '%.0f'), ...
-                num2str(concave_num, '%.3f'));
+                num2str(concave_num, '%.3f'), ...
+                num2str(focus_vola_rev, '%.2f'), ...
+                num2str(focus_norvar, '%.2f'), ...
+                num2str(focus_variance, '%.2f'), ...
+                num2str(focus_gaussdiff, '%.2f'), ...
+                num2str(focus_gdiff_volarev, '%.2f'));
             
         end
     end

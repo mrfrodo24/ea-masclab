@@ -23,6 +23,7 @@ end
 disp('%%%%%%%%%%%%%% PRE-PROCESSING %%%%%%%%%%%%%%')
 if exist('CACHED_PATH_SELECTION','var')
     preselected = CACHED_PATH_SELECTION;
+    if ~isnumeric(preselected), preselected = str2double(preselected); end
 else, preselected = -1;
 end
 [settings, user_selection] = pre_processing(preselected);

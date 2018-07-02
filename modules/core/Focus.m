@@ -1,5 +1,5 @@
 function [ outputs ] = Focus( img, ~, ~, ~ )
-%FOCUS Focus module summary...
+%FOCUS Computes a focus parameter using F_voll4 (Santos1997)
 %
 %   SUMMARY:
 %       Uses the Focus Measure function obtained from the Matlab File
@@ -34,6 +34,13 @@ img = imread(img_fullpath);
 % Current best -> BREN, LAPE
 % Others tried -> GLVA, GLLV, GLVN, GDER, DCTE, ACMO
 vola = fmeasure(img,'VOLA');
+% M1 = img(1:end-1,:);
+% M2 = img(2:end,:);
+% M3 = img(:,1:end-1);
+% M4 = img(:,2:end);
+% diff1 = abs(M1 - M2);
+% diff2 = abs(M3 - M4);
+% vola = mean([diff1(M1 > 0 | M2 > 0); diff2(M3 > 0 | M4 > 0)]);
 
 % Write outputs
 outputs{1} = vola;

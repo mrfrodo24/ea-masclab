@@ -76,6 +76,7 @@ if usage == 1
        strcmp(whichModule, 'Fallspeed') || ...
        strcmp(whichModule, 'Focus') || ...
        strcmp(whichModule, 'MaxDiameter') || ...
+       strcmp(whichModule, 'MoreFocus') || ...
        strcmp(whichModule, 'Orientation') || ...
        strcmp(whichModule, 'Perimeter') || ...
        strcmp(whichModule, 'Pores') || ...
@@ -130,6 +131,9 @@ function getModuleDependencies
             dependencies{1} = 'Focus';
 
         case 'Focus'
+            dependencies = {};
+            
+        case 'MoreFocus'
             dependencies = {};
 
         case 'MaxDiameter'
@@ -205,6 +209,9 @@ function getModuleInputs
             inputs{4} = goodSubFlake{28}; % # Good flakes in original img
 
         case 'Focus'
+            inputs = {'none'};
+            
+        case 'MoreFocus'
             inputs = {'none'};
 
         case 'MaxDiameter'

@@ -9,7 +9,7 @@
 function [goodSubFlakes] = initGoodSubFlakes( predefined )
     %% DEFINE goodSubFlakes
     MAX_GOODSUBFLAKES = 10000;
-    NUM_COLUMNS = 29;
+    NUM_COLUMNS = 34;
     goodSubFlakes = cell(MAX_GOODSUBFLAKES, NUM_COLUMNS);
     
     %% DEFAULT goodSubFlake Parameters (derived from SCAN & CROP)
@@ -45,7 +45,8 @@ function [goodSubFlakes] = initGoodSubFlakes( predefined )
     %   Reasonable low value, less than threshold: 0.4
     %   Reasonable high value, greater than threshold: 0.5
     
-    %% Focus MODULE Output Parameters
+    %% Original Focus MODULE Output Parameters
+    % Uses VOLA algorithm from fmeasure.m (Santos1997)
     % Col. 15: <FLOAT> Focus number. [0 1]
     
     %% MaxDiameter MODULE Output Parameters
@@ -92,6 +93,17 @@ function [goodSubFlakes] = initGoodSubFlakes( predefined )
     
     %% Orientation MODULE Output Parameters
     % Col. 29: <FLOAT> Angle from horizontal of major axis
+    
+    %% More Focus MODULES Output Parameters
+    % Col. 30: <FLOAT> Revised F_voll4 measure (normalizes by square root
+    %   of mean grey-level intensity)
+    % Col. 31: <FLOAT> F_norvar (Normalized variance) - (Santos1997)
+    % Col. 32: <FLOAT> F_var (Regular variance) - (Santos1997)
+    % Col. 33: <FLOAT> Avg. difference of grey-level intensities between
+    %   original image and gaussian filtered image
+    % Col. 34: <FLOAT> Absolute difference between Revised F_voll4 measure
+    %   on original image and gaussian filtered image.
+    %   A larger value (difference) implies better focus.
 
     %% ADDING A MODULE
     % The goodSubFlakes cell is for tracking the post-processing flake
