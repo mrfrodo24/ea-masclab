@@ -3,16 +3,21 @@
 % way such that you can stop the process at any time and resume it        %
 % seamlessly when restarting Matlab.                                      %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-clear
+clearvars -except CACHED_PATH_SELECTION
 % Make sure all necessary paths are added
 addpath(genpath('./cache'))
-addpath(genpath('./utils'))
 
 % SET AN EMAIL ADDRESS TO GET AN EMAIL IF A FATAL ERROR OCCURS (TODO)
 email = 'spencer.rhodes2@gmail.com';
 
 % First load settings
-load('cache/gen_params/last_parameters.mat')
+if exist('CACHED_PATH_SELECTION','var')
+	lastParamsFile = ['cache/cached_paths_' CACHED_PATH_SELECTION '/last_parameters.mat'];
+else
+	lastParamsFile = 'cache/gen_params/last_parameters.mat';
+end
+load(lastParamsFile);
+
 
 % Specify an additional settings field that will tell Scan & Crop to stop
 % after processing 20 cache files
@@ -35,7 +40,7 @@ settings.resume = settings.resume + 20;
 % Save the settings with new "resume", but not "pause"
 settings = rmfield(settings, 'pause'); %#ok<*NASGU>
 clearvars -except settings
-save('cache/gen_params/last_parameters.mat')
+save(lastParamsFile)
 
 % Now, quit matlab to release control back to calling script
 quit
