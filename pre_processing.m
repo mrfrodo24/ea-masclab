@@ -189,6 +189,10 @@ if ~isempty(filesInPath)
     end
     fclose(fwid);
     fprintf('done.\n');
+
+    if exist('changedPathToFlakes', 'var') && changedPathToFlakes
+        selection.id = numPaths;
+    end
     
 end
 fclose('all');
@@ -354,8 +358,10 @@ function define_params
         '\t<strong>Note</strong>: When this is set, the path will be searched for PNG files. If none are found\n' ...
         '\toutside of the processed image directories (CROP_CAM, UNCROP_CAM, TRIPLETS, REJECTS),\n' ...
         '\tthen you will be asked to provide a different path.\n'])
+    changingPathToFlakes = 0;
     if exist('pathToFlakes', 'var')
         s = input(sprintf('var pathToFlakes = %s;\nChange to: ', strrep(pathToFlakes,'\','\\')), 's');
+        changingPathToFlakes = 1;
     else
         % Require user to set a path
         s = input('Set pathToFlakes to: ', 's');
@@ -374,7 +380,7 @@ function define_params
     if ~isempty(s)
         % First, check if user provided path is already in cached_paths
         if exist(CACHED_PATHS_TXT, 'file')
-            if ~strfind(fileread(CACHED_PATHS_TXT'), ['"' s '"'])
+            if strfind(fileread(CACHED_PATHS_TXT'), ['"' s '"'])
                 % Path has been used before, accept this input
                 files = 1;
                 disp('Path found in cache! Okay to use again. Continuing...')
@@ -438,6 +444,10 @@ function define_params
             if isstruct(files)
                 disp('PNGs found!')
                 filesInPath = files;
+                % Signal to pre_processing that the user changed the cached path, indicating a new cached path should be made.
+                if changingPathToFlakes
+                    changedPathToFlakes = 1;
+                end
             end
             pathToFlakes = s;
         else
