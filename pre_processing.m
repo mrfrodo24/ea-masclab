@@ -728,7 +728,7 @@ function define_params
     end
     if exist('applyTopDiscardToCams', 'var')
         cur = applyTopDiscardToCams;
-    else, cur = 0; 
+    else, cur = -1; 
     end
     applyTopDiscardToCams = applyDiscardToCams('Top', cur);
     if exist('bottomDiscard', 'var')
@@ -754,7 +754,7 @@ function define_params
     end
     if exist('applyBotDiscardToCams', 'var')
         cur = applyBotDiscardToCams;
-    else, cur = 0; 
+    else, cur = -1; 
     end
     applyBotDiscardToCams = applyDiscardToCams('Bot', cur);
     if exist('leftDiscard', 'var')
@@ -780,7 +780,7 @@ function define_params
     end
     if exist('applyLeftDiscardToCams', 'var')
         cur = applyLeftDiscardToCams;
-    else, cur = 0; 
+    else, cur = -1; 
     end
     applyLeftDiscardToCams = applyDiscardToCams('Left', cur);
     if exist('rightDiscard', 'var')
@@ -806,7 +806,7 @@ function define_params
     end
     if exist('applyRightDiscardToCams', 'var')
         cur = applyRightDiscardToCams;
-    else, cur = 0; 
+    else, cur = -1; 
     end
     applyRightDiscardToCams = applyDiscardToCams('Right', cur);
     
@@ -1229,7 +1229,7 @@ function [isValid] = validate_datestr(s, dstart)
 end
 
 function [applied_cams] = applyDiscardToCams(type, curSetting)
-    if curSetting ~= 0
+    if length(curSetting) ~= 1 || curSetting ~= -1
         invalidList = 1;
         firstInput = 1;
         while invalidList
