@@ -19,7 +19,13 @@ outputs = cell(1,numOutputs);
 filledFlake = inputs{1};
 
 % Compute orientation
-stats = regionprops(filledFlake, 'Orientation');
+stats = regionprops(filledFlake, 'Orientation', 'MajorAxisLength');
+if length(stats) > 1
+    % Erroneous edges detected, pick the best (i.e. biggest) edge...
+    allSizes = [stats.MajorAxisLength];
+    whichBound = find( allSizes == max(allSizes), 1, 'first' );
+    stats = stats(whichBound);
+end
 
 % Write outputs
 outputs{1} = stats.Orientation;
