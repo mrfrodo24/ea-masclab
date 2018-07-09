@@ -7,7 +7,7 @@ RESUME=$(echo "1" | bc)
 FILE="$CACHED_PATHS""f$RESUME"".txt"
 
 while [ -f "$FILE" ]; do
-  matlab16a -r "cd $PATH_TO_EA; addpath ./utils; CACHED_PATH_SELECTION = $SELECTED;"
+  matlab16a -r "cd $PATH_TO_EA; addpath ./utils; CACHED_PATH_SELECTION = $SELECTED; scan_crop_resume_processing;"
 
   RESUME=$(echo "$RESUME + 20" | bc)
   FILE="$CACHED_PATHS""f$RESUME"".txt"
