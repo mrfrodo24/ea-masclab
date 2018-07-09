@@ -12,7 +12,7 @@ email = 'spencer.rhodes2@gmail.com';
 
 % First load settings
 if exist('CACHED_PATH_SELECTION','var')
-	lastParamsFile = ['cache/cached_paths_' CACHED_PATH_SELECTION '/last_parameters.mat'];
+	lastParamsFile = ['cache/cached_paths_' num2str(CACHED_PATH_SELECTION) '/last_parameters.mat'];
 else
 	lastParamsFile = 'cache/gen_params/last_parameters.mat';
 end
