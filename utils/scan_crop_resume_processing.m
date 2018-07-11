@@ -39,8 +39,7 @@ settings.resume = settings.resume + 20;
 
 % Save the settings with new "resume", but not "pause"
 settings = rmfield(settings, 'pause'); %#ok<*NASGU>
-clearvars -except settings
-save(lastParamsFile)
+save(lastParamsFile, settings)
 
 % Now, quit matlab to release control back to calling script
 quit
