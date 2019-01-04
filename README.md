@@ -20,7 +20,7 @@ This suite of Matlab functions and scripts processes image sets obtained from a 
 
 1. You will be prompted first to set where the image set is located on the machine.  From there, continue to follow the instructions for defining other user settings.  When you get to the end, enter `Y` to save the settings and continue.
 
-    If you aren't sure what a processing parameter is used for, please see the table [here](#user-settings-reference).
+    If you aren't sure what a processing parameter is used for, please see the table [here](https://github.com/mrfrodo24/ea-masclab/blob/master/docs/USER_SETTINGS.md).
 
 1. The next prompt will ask you if you want to run Scan & Crop.  This is the first step of processing, *but only needs to be done **once**.*  If you are processing a large amount of data, please consider using the Scan & Crop caller script (see notes below).  Also, given that this step will take a while (potentially a few days), you may want to consider running this step in a background shell.  The standard way I do this is with the linux [screen](http://dasunhegoda.com/unix-screen-command/263/) command.  
 
