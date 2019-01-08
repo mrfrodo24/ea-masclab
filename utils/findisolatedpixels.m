@@ -28,7 +28,7 @@
 
 function [r, c] = findisolatedpixels(b)
 
-    lut = makelut(@isolated, 3);
+    lut = makelut(@get_isolated, 3);
     isolated = applylut(b, lut);
     [r, c] = find(isolated);
 
@@ -42,7 +42,7 @@ function [r, c] = findisolatedpixels(b)
 %       2 5 8
 %       3 6 9
 
-function b = isolated(x)
+function b = get_isolated(x)
     
     b = x(5) && sum(x(:)) == 1;
         

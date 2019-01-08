@@ -23,6 +23,33 @@ end
 
 %% INIT SHARED VARS
 CACHED_PATHS_TXT = 'cache/cached_paths.txt';
+pathToFlakes = '';
+datestart = '';
+dateend = '';
+isCamColor = zeros(1,3);
+outputProcessedImgs = 0;
+camFOV = nan(1,3);
+backgroundThresh = 0;
+   topDiscard = 0; applyTopDiscardToCams = [];
+bottomDiscard = 0; applyBotDiscardToCams = [];
+  leftDiscard = 0; applyLeftDiscardToCams = [];
+ rightDiscard = 0; applyRightDiscardToCams = [];
+lineFill = 0;
+minFlakePerim = 0;
+minCropWidth = 0;
+maxEdgeTouch = 0;
+avgFlakeBrightness = 0;
+filterFocus = 0;
+focusThreshold = 0;
+internalVariability = 0;
+flakeBrighten = 0;
+siteName = '';
+cameraName = '';
+rescanOriginal = 0;
+skipProcessed = 0;
+
+filesInPath = [];
+changedPathToFlakes = 0;
 
 %% MAIN
 
@@ -376,11 +403,10 @@ function define_params
     % names to cached_paths. Instead of having to traverse to get these
     % files again (since we make sure that path user provides contains
     % PNGs), we'll hold onto this array of file structs.
-    filesInPath = [];
     if ~isempty(s)
         % First, check if user provided path is already in cached_paths
         if exist(CACHED_PATHS_TXT, 'file')
-            if strfind(fileread(CACHED_PATHS_TXT'), ['"' s '"'])
+            if contains(fileread(CACHED_PATHS_TXT), ['"' s '"'])
                 % Path has been used before, accept this input
                 files = 1;
                 disp('Path found in cache! Okay to use again. Continuing...')
@@ -392,13 +418,9 @@ function define_params
         end
         
         if ~files
-            imgFilter = @(d) isempty(regexp(d.name,'CROP_CAM')) && isempty(regexp(d.name,'UNCROP_CAM')) && isempty(regexp(d.name,'TRIPLETS')) && isempty(regexp(d.name,'REJECTS')); 
+            imgFilter = @(d) isempty(regexp(d.name,'UNCROP_CAM')) && isempty(regexp(d.name,'TRIPLETS')) && isempty(regexp(d.name,'REJECTS')); 
             disp('Searching for PNGs...')
-            if strfind(s, '\')
-                files = rdir([s '**\*.png'], imgFilter, s);
-            else
-                files = rdir([s '**/*.png'], imgFilter, s);
-            end
+            files = rdir([s '**' filesep '*.png'], imgFilter, s);
         end
         while ~isempty(s) && isempty(files)
             % While user provides a path with NO PNG files, continue to prompt
@@ -418,7 +440,7 @@ function define_params
             end
             if ~isempty(s)
                 if exist(CACHED_PATHS_TXT, 'file')
-                    if ~strfind(fileread(CACHED_PATHS_TXT), ['"' s '"'])
+                    if ~contains(fileread(CACHED_PATHS_TXT), ['"' s '"'])
                         % Path has been used before, accept this input
                         files = 1;
                         disp('Path found in cache! Okay to use again. Continuing...')
@@ -432,11 +454,7 @@ function define_params
                 if ~files
                     imgFilter = @(d) isempty(regexp(d.name,'CROP_CAM')) && isempty(regexp(d.name,'UNCROP_CAM')) && isempty(regexp(d.name,'TRIPLETS')) && isempty(regexp(d.name,'REJECTS')); %#ok<*RGXP1>
                     disp('Searching for PNGs...')
-                    if strfind(s, '\')
-                        files = rdir([s '**\*.png'], imgFilter, s);
-                    else
-                        files = rdir([s '**/*.png'], imgFilter, s);
-                    end
+                    files = rdir([s '**' filesep '*.png'], imgFilter, s);
                 end
             end
         end
