@@ -16,7 +16,7 @@ function [ dates ] = get_cached_flakes_dates( pathToFlakes, whichFiles )
 % ensure trailing slash
 if pathToFlakes(end) ~= filesep, pathToFlakes = [pathToFlakes filesep]; end
 
-if ~isfolder([pathToFlakes 'cache'])
+if ~isdir([pathToFlakes 'cache'])
     error('No cache folder in pathToFlakes.');
 end
 

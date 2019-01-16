@@ -92,7 +92,7 @@ GOOD_SUBFLAKES_VAR = 'goodSubFlakes';
 %% BEGIN FUNCTION
 % Make sure the cached path exists for the masc txt files
 path = [settings.pathToFlakes 'cache/MASCtxt/'];
-if ~isfolder(path)
+if ~isdir(path)
     mkdir(path);
 end
 
@@ -109,10 +109,10 @@ elseif ~isfield(settings, 'cameraName') || isempty(settings.cameraName)
 end
 
 % Make sure that site/station directories exist
-if ~isfolder([path settings.siteName])
+if ~isdir([path settings.siteName])
     mkdir([path settings.siteName]);
     mkdir([path settings.siteName '/' settings.cameraName]);
-elseif ~isfolder([path settings.cameraName])
+elseif ~isdir([path settings.cameraName])
     mkdir([path settings.cameraName]);
 end
 path = [path settings.siteName '/' settings.cameraName '/'];
@@ -212,7 +212,7 @@ for i = 1:length(goodDates)
                 end
                 % Check if day directory exists
                 curday = datestr(curdate,'yyyy.mm.dd');
-                if ~isfolder([path curday])
+                if ~isdir([path curday])
                     mkdir([path curday]);
                 end
                 % Open new hourly text file

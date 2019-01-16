@@ -27,7 +27,7 @@ status = 0;
 % for the path specified by the user.
 
 % If a "cache" directory doesn't exist in pathToFlakes, make one
-if ~isfolder([settings.pathToFlakes 'cache'])
+if ~isdir([settings.pathToFlakes 'cache'])
     mkdir([settings.pathToFlakes 'cache'])
 end
 
@@ -223,7 +223,7 @@ while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
             lastSlash = 0;
         end
         % Make the directory if it doesn't exist
-        if ~isfolder(cropcamdir)
+        if ~isdir(cropcamdir)
             mkdir(cropcamdir);
         end
         
