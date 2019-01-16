@@ -59,7 +59,7 @@ else
     %           than 1 GB or so...)
     %       16 GB of storage for statistics
     %       TODO...
-    status = detect_crop_filter_original(settings);
+    status = detect_crop_filter_original(CACHED_PATH_SELECTION, settings);
 
     if status > 0
         % Error occurred
@@ -111,7 +111,7 @@ while 1 % Executes until user choose "Save and Quit" from Menu
         disp('%%%% SCAN, FILTER, CROP ORIGINAL IMAGES %%%%')
         fprintf('\n');
         
-        status = detect_crop_filter_original(settings);
+        status = detect_crop_filter_original(CACHED_PATH_SELECTION, settings);
                         
         if status > 0
             % Error occurred

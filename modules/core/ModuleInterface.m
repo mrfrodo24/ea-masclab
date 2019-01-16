@@ -28,11 +28,9 @@ function [ outputs ] = ModuleInterface( img_path, bounds, topLeftCoords, varargi
 %                   (given by goodSubFlakes) given as array
 %                   [row start, column start]
 %           
-%           THERE ARE TWO GOALS OF THIS DESIGN (and it's important that you know them):
-%               I.   Minimize overhead at all costs (since module is 
-%                    called for each good snowflake).
-%               II.  Provide an infrastructure that can easily provide 
-%                    support for additional modules.
+%           THERE ARE TWO GOALS OF THIS DESIGN:
+%               I.   Minimize overhead (since module is called for each good snowflake).
+%               II.  Provide an infrastructure in which new modules can be easily added.
 %
 %       Q: What can a module output?
 %       A: Each module should output AS LITTLE AS POSSIBLE! This is to

@@ -1,30 +1,28 @@
-function [settings] = ModuleRunner( modules, settings )
-%MODULERUNNER Executes EA MascLab module processing on all cropped flakes.
-%   Detailed explanation goes here
+function [ settings ] = ModuleRunner( modules, settings )
+%MODULERUNNER Executes EA MascLab module processing on all cropped, good flakes.
+%   
+%   SUMMARY:
+%       Prompts user to select modules to run on any good, cropped flakes
+%       detected by Scan & Crop in settings.pathToFlakes.
+%
+%       This function serves as a wrapper for modular processing of
+%       statistical image analysis. Each module has its own inputs and
+%       outputs. For more information about modules, see modules/core/ModuleInterface.m
+%
+%   INPUTS:
+%       modules - a cell array of all available modules (obtained by modules/ModuleFinder.m)
+%       settings - struct of settings for selected cached path to process
 
 
-%% Declarations
-% Some constants that should really never change
-IMAGE_DATE_FORMAT = 'yyyy.mm.dd_HH.MM.SS';
-LENGTH_IMAGE_DATE = length(IMAGE_DATE_FORMAT);
+%% 1. Go through list of modules provided and for each one ask if the user
+%      wants to run it. If user selects yes, add the module to a list to
+%      be ran once user has been prompted for all modules. Also verifies
+%      modules have required dependencies.
+modules = ModuleSelector(modules, settings);
 
-% OPTIONAL CHECK - RESUME
-% Can run this function in pause/resume mode, similar to Scan & Crop.
-% Use the utils/module_resume_processing.m function in accordance with
-% the utils/module_proc_caller.sh script and you will be able to run
-% the modules over 20 cache files at a time.
-if ~isfield(settings, 'remember_modules')
-    %% 1. Go through list of modules provided and for each one ask if the user
-    %      wants to run it. If user selects yes, add the module to a list to
-    %      be ran once user has been prompted for all modules. Also verifies
-    %      modules have required dependencies.
-    modules = ModuleSelector(modules, settings);
-end
-
-% Check if modules is empty now, if so then there's nothing to do, just go
-% back to the main menu
+% Check if modules is empty now, if so then there's nothing to do.
 if isempty(modules)
-    fprintf('No modules selected! Redirecting to main menu...\n\n');
+    fprintf('No modules selected!\n\n');
     return;
 end
 
@@ -41,31 +39,30 @@ end
 %           index to goodSubFlake for each output from the module.
 
 % Loop through goodflakes files
-if isfield(settings, 'resume_module_proc')
-    goodFlakesCounter = settings.resume_module_proc;
-else
-    goodFlakesCounter = 0;
-end
-while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goodflakes.mat'],'file') && ...
-        (~isfield(settings, 'resume_module_proc') || goodFlakesCounter < settings.resume_module_proc + 2)
+goodDates = get_cached_flakes_dates(settings.pathToFlakes, 'good');
+    
+fprintf(['Running selected modules on loaded data that is within\n' ...
+    datestr(settings.datestart) ' and ' datestr(settings.dateend) '\n\n']);
+
+for i = 1:length(goodDates)
+    
+    if goodDates(i) + 1 < settings.datestart || goodDates(i) - 1 > settings.dateend
+        continue;
+    end
+
+    % Load the goodSubFlakes
+    fprintf('Loading data from file data_%s_goodflakes.mat in cache...', datestr(goodDates(i),'yyyymmdd'));
+    load([settings.pathToFlakes 'cache/data_' datestr(goodDates(i),'yyyymmdd') '_goodflakes.mat'], 'goodSubFlakes')
+    fprintf('done.\n');
 
     % Maintain count of all flakes and whether goodSubFlakes gets modified
     modifiedGoodSubFlakes = 0;
     count_allflakes = 0;
-
-    % Load the goodSubFlakes
-    fprintf('Loading data from file data%i_goodflakes.mat in cache...', goodFlakesCounter);
-    load([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goodflakes.mat'], ...
-        'goodSubFlakes')
-    fprintf('done.\n');
-    fprintf(['Running selected modules on loaded data that is within\n' ...
-        datestr(settings.datestart) ' and ' datestr(settings.dateend) '\n\n']);
     
     % Make sure goodSubFlakes exists (if not, error)
     if ~exist('goodSubFlakes', 'var')
         % Not a valid goodflakes mat file
         fprintf('Encountered good flakes file without correct variable(s). Skipping...');
-        goodFlakesCounter = goodFlakesCounter + 1;
         continue;
         
     % As long as it exists, run it through initGoodSubFlakes to check that
@@ -74,13 +71,12 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
         goodSubFlakes = initGoodSubFlakes(goodSubFlakes);
     end
     
-    % Count the not-empty entries
-    for j = 1 : size(goodSubFlakes, 1)
-        if isempty(goodSubFlakes{j,1})
-            break;
-        end
+    numGoodFlakes = find(~cellfun(@isempty, goodSubFlakes(:,1)), 1, 'last');
+    if isempty(numGoodFlakes)
+        % All cells are empty
+        fprintf('No good flakes found in this file. Skipping...');
+        continue;
     end
-    numGoodFlakes = j - 1;
     
     % Initialize variable that will hold the timestamp for each flake
     % indexed in goodSubFlakes
@@ -106,7 +102,7 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
                 '\tof this action.\n']);
             fprintf('Bad filename: %s\n', goodSubFlakes{j,1});
             fprintf('From mat-file: %s\n', ...
-                [settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goodflakes.mat']);
+                [settings.pathToFlakes 'cache/data_' datestr(goodDates(i),'yyyymmdd') '_goodflakes.mat']);
             fprintf('Index of bad record in mat-file: %i\n\n', j);
             fprintf('Exiting...\n');
             return;
@@ -115,20 +111,18 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
         end
         
         count_allflakes = count_allflakes + 1;
+        mascImg = parse_masc_filename(timestampAndIds);
         
         % Add date
-        d = datenum(timestampAndIds(1 : LENGTH_IMAGE_DATE - 1), ...
-            IMAGE_DATE_FORMAT);
-        goodDatesIndices(count_allflakes, 1) = d;
+        goodDatesIndices(count_allflakes, 1) = mascImg.date;
 
         % Add index into goodSubFlakes (which will be stored in allGoodSubFlakes)
         goodDatesIndices(count_allflakes, 2) = j;
         
         % Add camId
-        goodDatesIndices(count_allflakes, 3) = str2num(timestampAndIds(strfind(timestampAndIds, 'cam_') + 4)); %#ok<ST2NM>
+        goodDatesIndices(count_allflakes, 3) = mascImg.camId;
 
     end
-    clear d startindex endindex filename
     
     dates = goodDatesIndices(:,1);
     numFlakesToProcess = length(find(dates >= settings.datestart & ...
@@ -192,7 +186,7 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
             settings.filledFlake = filledFlakes{k};
 
             % Get inputs for module
-            [~,~,module_inputs] = ModuleInputHandler(modules{j}, goodSubFlake, settings, 3); %#ok<NASGU>
+            [~,~,module_inputs] = ModuleInputHandler(modules{j}, goodSubFlake, settings, 3);  %#ok<ASGLU>
 
             % Run current module on the current flake img
             try
@@ -257,38 +251,24 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
     % Now that we've gone through the modules for this goodflakes.mat file,
     % we can save it (if necessary)
     if modifiedGoodSubFlakes
-        % First, move the old goodSubFlakes (in case user decides they need to
-        % revert back to old data).
-        movefile([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goodflakes.mat'], ...
-                 [settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_prevgoodflakes.mat']);
-        fprintf('\tMoved old good flake data to:\n\t\t%s\n', ...
-            [settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_prevgoodflakes.mat']);
+        cacheFilePath = [settings.pathToFlakes 'cache/data_' datestr(goodDates(i),'yyyymmdd') '_goodflakes.mat'];
+        oldCacheFilePath = [settings.pathToFlakes 'cache/data_' datestr(goodDates(i),'yyyymmdd') '_prevgoodflakes.mat'];
+        % First, rename the current goodflakes file (in case user decides they need to
+        % revert back to old data)
+        movefile(cacheFilePath, oldCacheFilePath);
+        fprintf('\tMoved old good flake data to:\n\t\t%s\n', oldCacheFilePath);
 
         % Now save the new subFlakes
-        save([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goodflakes.mat'], ...
-            'goodSubFlakes', ...
-            'settings', ...
-            '-v7.3')
-        fprintf('\tSaved new good flake data to:\n\t\t%s\n', ...
-            [settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goodflakes.mat']);
+        save(cacheFilePath, 'goodSubFlakes', 'settings', '-v7.3')
+        fprintf('\tSaved new good flake data to:\n\t\t%s\n', cacheFilePath);
     end
     
     clear goodSubFlakes numGoodFlakes goodDatesIndices dates numFlakesToProcess;
-    
-    goodFlakesCounter = goodFlakesCounter + 1;
         
 end
 
-if exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goodflakes.mat'],'file')
-    fprintf('Pausing module processing...\n');
-elseif isfield(settings, 'resume_module_proc')
-    settings = rmfield(settings, 'resume_module_proc');
-    settings = rmfield(settings, 'remember_modules');
-    clearvars -except settings
-    save('cache/gen_params/last_parameters.mat')
-    fprintf('Finished all modules on all data! Use Ctrl+C as soon as matlab quits to exit the bash script that is calling Matlab.\n');
-    fprintf('Run ''dbcont'' to continue...')
-    keyboard
+if isempty(goodDates)
+    fprintf('No good flake data to process!\n\n');
 else
     fprintf('Finished All Modules On All Data!\n\n');
 end

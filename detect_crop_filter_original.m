@@ -1,5 +1,5 @@
-function [ status ] = detect_crop_filter_original( settings )
-%DETECT_CROP_FILTER_ORIGINAL Summary of this function goes here
+function [ status ] = detect_crop_filter_original(selected_path, settings )
+%DETECT_CROP_FILTER_ORIGINAL The Scan & Crop stage of ea-masclab
 %   
 %   SUMMARY:
 %       If user has selected a folder in pre_processing that has not yet
@@ -10,43 +10,44 @@ function [ status ] = detect_crop_filter_original( settings )
 %           3. Crop the flakes to a new, cached image
 %           4. Store the location and boundary of each flake
 %
+%   INPUTS:
+%       selected_path - Which cached path is going to be scanned
+%       settings - The settings for the cached path
+%
 
-% IMPORTANT VALUES!!!!
+%% Constants
 MAX_SUBFLAKES = 25000; 
-MAX_GOODSUBFLAKES = 10000;
 % Number of fields in the cache_file
 NUM_FILE_FIELDS = 6;
 MAX_CACHEFILE_RECORDS = 5000;
 
+%% Steps before running Scan & Crop
 status = 0;
 % Will read each image by going through the files listed in cached_paths.txt
 % for the path specified by the user.
 
-% Read in the cached_paths.txt file
-fid = fopen('cache/cached_paths.txt','r');
-if fid < 1
-    disp('Could not find cached_paths.txt in detect_crop_filter_original. Exiting...')
+% If a "cache" directory doesn't exist in pathToFlakes, make one
+if ~isfolder([settings.pathToFlakes 'cache'])
+    mkdir([settings.pathToFlakes 'cache'])
+end
+
+% Make sure cached path exists
+if ischar(selected_path), selected_path = str2num(selected_path); end %#ok<ST2NM>
+if isempty(get_cachedpath(selected_path))
+    fprintf('Cached path %i does not exist. Exiting...\n', selected_path);
     status = 1; % Error
     return;
 end
-files = textscan(fid,'%s\n','Delimiter','\t');
-files = files{1};
-fclose(fid);
-folderindex = find(strcmp(files,['Path = "' settings.pathToFlakes '"']));
-if isempty(folderindex)
-    fprintf(['Could not find %s\nin cached_paths.txt. You probably need to re-run the pre-processing,\n' ...
-        'and make sure to define the pathToFlakes variable as the folder specified. Exiting...\n'], ...
-        settings.pathToFlakes);
-    status = 1; % Error
-    return;
-end
-% Now we need to get the CACHE FILE that corresponds to pathToFlakes
-cache_folder = files{folderindex+1};
-cache_folder = cache_folder(strfind(cache_folder,'"cache/') + length('"cache/') : end-1);
-clear files;
+cache_folder = sprintf('cached_paths_%i', selected_path);
 
 % Use one variable to track the current/new f*.txt cache records
 allocatedFiles = cell(MAX_CACHEFILE_RECORDS, NUM_FILE_FIELDS);
+
+% track the date of records being accumulated for
+theDate = 0;
+% track the dates that have been processed (might end up having to append)
+% or that already have mat files.
+dates = get_cached_flakes_dates(settings.pathToFlakes, 'all');
 
 % Here, we'll declare a variable subFlakes, which will store ALL pertinent
 % statistical data for each cropped snowflake.  We will make it a cell
@@ -58,7 +59,9 @@ allocatedFiles = cell(MAX_CACHEFILE_RECORDS, NUM_FILE_FIELDS);
 %       (4) Start of image (Y)
 %       (5) Flake bounds
 %       (6) Perimeter pixels
-subFlakes = cell(MAX_SUBFLAKES, 6);
+%       (7) Number of accepted flakes in original
+%       (8) Number of good flakes in original
+subFlakes = cell(MAX_SUBFLAKES, 8);
 subCounter = 0;
 
 % Here, we'll declare a variables goodSubFlakes, which will store 
@@ -67,38 +70,15 @@ subCounter = 0;
 goodSubFlakes = initGoodSubFlakes([]);
 goodSubCounter = 0;
 
-numSubFlakeSaves = 0;
-numGoodSubFlakeSaves = 0;
-
-% OPTIONAL! Check if resuming Scan & Crop or trying to run in the "mode"
+% Check if resuming Scan & Crop i.e. trying to run in the "mode"
 % that allows for pausing every 20 cache files
 if isfield(settings, 'pause')
     cache_counter = settings.resume;
-    
-    % Load last subFlakes and goodSubFlakes, if applicable
-    numSubFlakeSaves = length(dir([settings.pathToFlakes 'cache/*_allflakes.mat'])) - 1;
-    if numSubFlakeSaves >= 0
-        var = load([settings.pathToFlakes 'cache/data' ...
-            num2str(numSubFlakeSaves) '_allflakes.mat'], 'subFlakes');
-        subFlakes = var.subFlakes;
-        subCounter = find(cellfun(@isempty, subFlakes(:,1)), 1, 'first') - 1;
-    else
-        numSubFlakeSaves = 0;
-    end
-    numGoodSubFlakeSaves = length(dir([settings.pathToFlakes 'cache/*_goodflakes.mat'])) - 1;
-    if numGoodSubFlakeSaves >= 0
-        var = load([settings.pathToFlakes 'cache/data' ...
-            num2str(numGoodSubFlakeSaves) '_goodflakes.mat'], 'goodSubFlakes');
-        goodSubFlakes = var.goodSubFlakes;
-        goodSubCounter = find(cellfun(@isempty, goodSubFlakes(:,1)), 1, 'first') - 1;
-    else
-        numGoodSubFlakeSaves = 0;
-    end
-    clear var
 else
     cache_counter = 1;
 end
 
+%% Scan & Crop
 % Go through each sub-cache file
 while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
         exist(['cache/' cache_folder '/f' num2str(cache_counter) '.txt'], 'file')) || ...
@@ -127,11 +107,13 @@ while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
     clear files;
     totalFlakes = sum(~cellfun(@isempty,allocatedFiles(:,1)));
 
-    % Loop through the images under the specified folder until we get to
-    % another 'Path = "..."' line or we reach the end of the allocatedFiles cell array.
-    disp(['Scanning & cropping images in ' cache_folder ' from f' num2str(cache_counter) '.txt']);
-    reverseStr = '';
+    % Loop through the images enumerated by the cache file "f(cache_counter)"
+    textprogressbar(['Scanning & cropping images in ' cache_folder ' from f' num2str(cache_counter) '.txt... '], totalFlakes);
     while image_id <= totalFlakes && ~isempty(allocatedFiles{image_id,1})
+
+        % Print the status of the loop
+        textprogressbar(image_id);
+        
         % First check that record in allocatedFiles indicated by image_id is to be
         % scanned:
         if allocatedFiles{image_id,2} == 2
@@ -150,11 +132,11 @@ while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
         originalFilename = allocatedFiles{image_id,1};
 
         % Get original image's file extension
-        if strfind(originalFilename, '.png') || strfind(originalFilename, '.PNG')
+        if contains(originalFilename, '.png', 'IgnoreCase', 1)
             fileExt = 'PNG';
-        elseif strfind(originalFilename, '.jpg') || strfind(originalFilename, '.JPG')
+        elseif contains(originalFilename, '.jpg', 'IgnoreCase', 1)
             fileExt = 'JPG';
-        elseif strfind(originalFilename, '.jpeg') || strfind(originalFilename, '.JPEG')
+        elseif contains(originalFilename, '.jpeg', 'IgnoreCase', 1)
             fileExt = 'JPEG';
         else
             fprintf('Unsupported image file extension for file: %s\n', originalFilename);
@@ -185,18 +167,14 @@ while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
         else
             timestampAndIds = timestampAndIds{1};
         end
-        origFlakeIDindex = strfind(timestampAndIds, 'flake_');
-        substr1 = timestampAndIds(origFlakeIDindex+6:end);
-        origFlakeIDendIndex = strfind(substr1,'_');
-        origFlakeID = substr1(1:origFlakeIDendIndex-1);
-        origCameraIDindex = strfind(timestampAndIds, 'cam_');
-        substr1 = timestampAndIds(origCameraIDindex+4:end);
-        origCameraIDendIndex = strfind(substr1,'.png');
-        origCameraID = str2num(substr1(1:origCameraIDendIndex-1)); %#ok<ST2NM>
+        mascImg = parse_masc_filename(timestampAndIds);
+        origFlakeID = mascImg.imageId;
+        origCameraID = mascImg.camId;
+        d = datenum(datestr(mascImg.date,'yyyymmdd'),'yyyymmdd');
 
         try % Read in image
             arr = imread([settings.pathToFlakes originalFilename]);
-        catch err 
+        catch 
             % Couldn't read image for some reason
             fprintf('\nWARNING - Image %s could not be read. Skipping...\n', originalFilename);
             image_id = image_id + 1;
@@ -245,33 +223,17 @@ while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
             lastSlash = 0;
         end
         % Make the directory if it doesn't exist
-        if ~isdir(cropcamdir)
+        if ~isfolder(cropcamdir)
             mkdir(cropcamdir);
         end
-
-        % Check if number of sub-flakes in this image will cause "subFlakes" to
-        % exceed its size limit. If so, then save off subFlakes and 
-        % re-initialize it.
-        if size(fList,1) + subCounter + 1 >= MAX_SUBFLAKES
-            saveSubFlakes
-            % Clear subFlakes
-            subFlakes(:) = {[]};
-            subCounter = 0;
-            % Update numSubFlakeSaves
-            numSubFlakeSaves = numSubFlakeSaves + 1;
+        
+        % Check if the goodSubFlakes & subFlakes for theDate need to be
+        % saved off because we've gotten to a new date
+        if theDate ~= d
+            saveFlakeMatFiles(theDate, dates);
+            theDate = d;
         end
-
-        % Check if number of good-flakes in this image will cause
-        % "goodSubFlakes" to exceed its size limit (currently 75,000 flakes).
-        % If so, then save off goodSubFlakes and re-initialize it.
-        if goodSubCounter >= MAX_GOODSUBFLAKES
-            saveGoodSubFlakes
-            % Re-initialize
-            goodSubFlakes(:) = {[]};
-            goodSubCounter = 0;
-            % Update numGoodSubFlakeSaves
-            numGoodSubFlakeSaves = numGoodSubFlakeSaves + 1;
-        end
+            
 
         % Print all accepted flakes to cache folder and signify for further
         % processing. newFlakes will be added to allocatedFiles cell to then be used to
@@ -296,13 +258,9 @@ while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
                 % NOTE: IF ONE OF SUBDIRECTORIES IN PATHTOFLAKES CONTAINS "flake_",
                 % THEN THIS WILL GET MESSED UP...
                 newFlakeFilename = strrep(originalFilename(lastSlash+1:end), ...
-                    ['flake_' origFlakeID], ...
-                    ['flake_' origFlakeID '.' num2str(cropflakeid)]);
-                if strfind(cropcamdir,'\')
-                    pathToNewFlake = [ cropcamdir '\' newFlakeFilename ];
-                else
-                    pathToNewFlake = [ cropcamdir '/' newFlakeFilename ];
-                end
+                    ['flake_' num2str(origFlakeID)], ...
+                    ['flake_' num2str(origFlakeID) '.' num2str(cropflakeid)]);
+                pathToNewFlake = [ cropcamdir filesep newFlakeFilename ];
                 
                 % First, pad the top, bottom, left, and right sides with 5
                 % rows/columns of pixels...
@@ -380,15 +338,8 @@ while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
         image_id = image_id + 1;
         count_scans = count_scans + 1;
 
-        % Print the status of the loop
-        percentDone = 100 * count_scans / totalFileRecords;
-        msg = sprintf('%.0f%% complete...', percentDone);
-        fprintf('%s%s', reverseStr, msg);
-        reverseStr = repmat(sprintf('\b'), 1, length(msg));
-
     end
-    fprintf('%s%s', reverseStr, '...done!')
-    fprintf('\n')
+    textprogressbar(' done!');
 
     % To store the location and boundary of each flake, we save off the
     % locationX and locationY values to the cache file and the cropped
@@ -404,8 +355,7 @@ while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
 end
 
 % Save the last batch of subflakes
-saveSubFlakes;
-saveGoodSubFlakes;
+saveFlakeMatFiles(theDate, dates);
 % Clear everything in the function
 clearvars -except status;
 
@@ -416,6 +366,8 @@ fprintf('\n')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%% TRUE END OF DETECT_CROP_FILTER_ORIGINAL FUNCTION %%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Sub-functions
 
     function updateCachedPaths
         updated_cached_paths_file = ['cache/updated_cached_paths_' num2str(rand * 100) '.txt'];
@@ -439,33 +391,39 @@ fprintf('\n')
         movefile(['cache/' cache_folder '/f' num2str(cache_counter) '.txt'], ...
                  ['cache/' cache_folder '/prev_f' num2str(cache_counter) '.txt'])
         movefile(updated_cached_paths_file, ...
-                ['cache/' cache_folder '/f' num2str(cache_counter) '.txt'])
+                 ['cache/' cache_folder '/f' num2str(cache_counter) '.txt'])
         
     end 
 
-    function saveSubFlakes
-        % If a "cache" directory doesn't exist in pathToFlakes, make one
-        if ~isdir([settings.pathToFlakes 'cache'])
-            mkdir([settings.pathToFlakes 'cache'])
+    function saveFlakeMatFiles(theDate, dates)
+        if theDate ~= 0
+            filePrefix = [settings.pathToFlakes 'cache' filesep 'data_' datestr(theDate,'yyyymmdd')];
+            allFile = [filePrefix '_allflakes.mat'];
+            goodFile = [filePrefix '_goodflakes.mat'];
+            if ismember(theDate, dates)
+                newSubFlakes = subFlakes;
+                newGoodSubFlakes = goodSubFlakes;
+                load(allFile, 'subFlakes')
+                load(goodFile, 'goodSubFlakes')
+                subFlakes = [subFlakes; newSubFlakes]; 
+                goodSubFlakes = [goodSubFlakes; newGoodSubFlakes];
+            else
+                dates = [dates theDate]; %#ok<NASGU> append theDate to dates
+            end
+            subFlakes = stripEmptyCellRows(subFlakes);
+            goodSubFlakes = stripEmptyCellRows(goodSubFlakes);
+            save(allFile, 'subFlakes', 'settings', '-v7.3')
+            save(goodFile, 'goodSubFlakes', 'settings', '-v7.3')
+            subFlakes = cell(MAX_SUBFLAKES, 8);
+            goodSubFlakes = initGoodSubFlakes([]);
         end
-        save([settings.pathToFlakes 'cache/data' num2str(numSubFlakeSaves) '_allflakes.mat'], ...
-            'subFlakes', 'settings', '-v7.3')
-    end
-
-    function saveGoodSubFlakes
-        % If a "cache" directory doesn't exist in pathToFlakes, make one
-        if ~isdir([settings.pathToFlakes 'cache'])
-            mkdir([settings.pathToFlakes 'cache'])
-        end
-        save([settings.pathToFlakes 'cache/data' num2str(numGoodSubFlakeSaves) '_goodflakes.mat'], ...
-            'goodSubFlakes', 'settings', '-v7.3')
     end
 
     function updateSubFlakes
         from = subCounter + 1;
         to = subCounter + size(fList,1);
         numNew = size(fList,1);
-        subFlakes(from : to, 1) = newFlakes(1:numNew,1); %#ok<SETNU>
+        subFlakes(from : to, 1) = newFlakes(1:numNew,1); 
         subFlakes(from : to, 2) = newFlakes(1:numNew,5);
         subFlakes(from : to, 3) = newFlakes(1:numNew,6);
         subFlakes(from : to, 4) = newFlakes(1:numNew,7);
@@ -478,7 +436,7 @@ fprintf('\n')
 
     function updateGoodSubFlakes(id)
         goodSubCounter = goodSubCounter + 1;
-        goodSubFlakes(goodSubCounter, 1) = newFlakes(id, 1); %#ok<SETNU>
+        goodSubFlakes(goodSubCounter, 1) = newFlakes(id, 1);
         goodSubFlakes(goodSubCounter, 27) = newFlakes(id, 3); 
         goodSubFlakes(goodSubCounter, 28) = newFlakes(id, 4);
         goodSubFlakes(goodSubCounter, 2) = newFlakes(id, 5);
@@ -486,6 +444,10 @@ fprintf('\n')
         goodSubFlakes(goodSubCounter, 4) = newFlakes(id, 7);
         goodSubFlakes(goodSubCounter, 5) = newFlakes(id, 8);
         goodSubFlakes(goodSubCounter, 6) = newFlakes(id, 9);
+    end
+    
+    function [data] = stripEmptyCellRows(data)
+        data(cellfun(@isempty,data(:,1)),:) = [];    
     end
 
 end

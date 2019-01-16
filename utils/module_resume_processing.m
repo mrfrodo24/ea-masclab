@@ -1,3 +1,5 @@
+% DEPRECATED
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % This script was built to allow running of Module functionality in a     %
 % way such that you can stop the process at any time and resume it        %

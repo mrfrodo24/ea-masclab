@@ -1,6 +1,15 @@
 function [ masc ] = parse_masc_filename( filename )
 %PARSE_MASC_FILENAME Get datenum, image, particle, and camera id of a MASC
 %image filename
+%
+%   OUTPUTS:
+%       masc - Matlab struct with fields for the image filename parsed:
+%           .date (serial datenum)
+%           .site (string)
+%           .station (string)
+%           .imageId (int)
+%           .particleId (int)
+%           .camId (int)
 
 %% Find the timestamp in the filename
 dstartId = 1;

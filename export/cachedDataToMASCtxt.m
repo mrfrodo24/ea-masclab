@@ -25,8 +25,6 @@ function cachedDataToMASCtxt( settings )
 
 %% CONSTANTS
 % Some constants that should really never change
-IMAGE_DATE_FORMAT = 'yyyy.mm.dd_HH.MM.SS';
-LENGTH_IMAGE_DATE = length(IMAGE_DATE_FORMAT);
 
 % NEW MASC TXT VERSION (10/10/2016)
 % This version of the MASC txt file for the SDB puts all of the Flake data
@@ -88,30 +86,33 @@ MASC_WRITE_STRING = [ ...
     '\n' ... % END LINE
 ];
 
+%% CONSTANTS
+GOOD_SUBFLAKES_VAR = 'goodSubFlakes';
+
 %% BEGIN FUNCTION
 % Make sure the cached path exists for the masc txt files
 path = [settings.pathToFlakes 'cache/MASCtxt/'];
-if ~isdir(path)
+if ~isfolder(path)
     mkdir(path);
 end
 
 % Check for required settings
 if ~isfield(settings, 'siteName') || isempty(settings.siteName)
     disp('Could not export MASC txt file:')
-    fprintf('\tsiteName either missing or undefined in general parameters.\n\n');
+    fprintf('\tsiteName either missing or undefined in settings.\n\n');
     return;
    
 elseif ~isfield(settings, 'cameraName') || isempty(settings.cameraName)
     disp('Could not export MASC txt file:')
-    fprintf('\tcameraName either missing or undefined in general parameters.\n\n');
+    fprintf('\tcameraName either missing or undefined in settings.\n\n');
     return;
 end
 
 % Make sure that site/station directories exist
-if ~isdir([path settings.siteName])
+if ~isfolder([path settings.siteName])
     mkdir([path settings.siteName]);
     mkdir([path settings.siteName '/' settings.cameraName]);
-elseif ~isdir([path settings.cameraName])
+elseif ~isfolder([path settings.cameraName])
     mkdir([path settings.cameraName]);
 end
 path = [path settings.siteName '/' settings.cameraName '/'];
@@ -122,30 +123,30 @@ fwid = -1;
 
 % Loop through goodflakes, printing hourly txt files where the hour is
 % within the specified date range
-goodFlakesCounter = 0;
-while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goodflakes.mat'],'file')
+goodDates = get_cached_flakes_dates(settings.pathToFlakes, 'good');
+for i = 1:length(goodDates)
+    goodDateStr = datestr(goodDates(i), 'yyyymmdd');
     
     % Load the goodSubFlakes
-    fprintf('Loading data from file data%i_goodflakes.mat in cache...', goodFlakesCounter);
-    load([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goodflakes.mat'], ...
-        'goodSubFlakes')
+    goodSubFlakes = {};
+    fprintf('Loading data from file data_%s_goodflakes.mat in cache...', goodDateStr);
+    load([settings.pathToFlakes 'cache/data_' goodDateStr '_goodflakes.mat'], ...
+        GOOD_SUBFLAKES_VAR)
     fprintf('done.\n');
     
     % Make sure goodSubFlakes exists (if not, error)
-    if ~exist('goodSubFlakes', 'var')
+    if ~exist(GOOD_SUBFLAKES_VAR, 'var') || isempty(goodSubFlakes)
         % Not a valid goodflakes mat file
-        fprintf('Encountered good flakes file without correct variable(s). Skipping...');
-        goodFlakesCounter = goodFlakesCounter + 1;
+        fprintf(['Encountered good flakes file without' GOOD_SUBFLAKES_VAR ' variable. Skipping...']);
         continue;
     end
     
-    % Count the not-empty entries
-    for j = 1 : size(goodSubFlakes, 1)  %#ok<USENS>
-        if isempty(goodSubFlakes{j,1})
-            break;
-        end
+    numGoodFlakes = find(~cellfun(@isempty, goodSubFlakes(:,1)), 1, 'last');
+    if isempty(numGoodFlakes)
+        % All cells are empty
+        fprintf('No good flakes found in this file. Skipping...');
+        continue;
     end
-    numGoodFlakes = j - 1;
     
     % Initialize variable that will hold the timestamp for each flake
     % indexed in goodSubFlakes
@@ -172,7 +173,7 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
                 '\tof this action.\n']);
             fprintf('Bad filename: %s\n', goodSubFlakes{j,1});
             fprintf('From mat-file: %s\n', ...
-                [settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goodflakes.mat']);
+                [settings.pathToFlakes 'cache/data_' goodDateStr '_goodflakes.mat']);
             fprintf('Index of bad record in mat-file: %i\n\n', j);
             fprintf('Exiting...\n');
             return;
@@ -181,8 +182,8 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
         end
 
         % Add date
-        dates(j) = datenum(timestampAndIds(1 : LENGTH_IMAGE_DATE - 1), ...
-            IMAGE_DATE_FORMAT);
+        mascImg = parse_masc_filename(timestampAndIds);
+        dates(j) = mascImg.date;
 
     end
     clear d startindex endindex filename
@@ -193,7 +194,6 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
     if numFlakesToProcess == 0
         fprintf(['No flakes in the loaded data that are within the specified\n' ...
             'date range. Skipping to next good flake data...\n']);
-        goodFlakesCounter = goodFlakesCounter + 1;
         continue;
     end
     
@@ -212,7 +212,7 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
                 end
                 % Check if day directory exists
                 curday = datestr(curdate,'yyyy.mm.dd');
-                if ~isdir([path curday])
+                if ~isfolder([path curday])
                     mkdir([path curday]);
                 end
                 % Open new hourly text file
@@ -371,8 +371,6 @@ while exist([settings.pathToFlakes 'cache/data' num2str(goodFlakesCounter) '_goo
             
         end
     end
-                
-    goodFlakesCounter = goodFlakesCounter + 1;
     
 end
 

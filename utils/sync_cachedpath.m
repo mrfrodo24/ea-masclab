@@ -8,6 +8,10 @@ function [ imgsAdded ] = sync_cachedpath( cachedPath, settings )
 %       cache txt files, i.e. cache/cached_paths_X/f*.txt).
 %       Gets the set of images in the pathToFlakes to cross-reference
 %       with what's already in the cache txt files.
+%
+%   WARNING:
+%       For this algorithm to work correctly, both the old set of f*.txt 
+%       files AND the list of new images should be sorted.
 %   
 %   NOTES:
 %       - Won't overwrite any cropped images
@@ -27,14 +31,16 @@ function [ imgsAdded ] = sync_cachedpath( cachedPath, settings )
 %% Masc comparison function
 % Returns -1 if s2 comes before s1. 1 if s1 comes before s2. 0 if equal.
 function [cmp] = mascCmp(s1, s2)
+    sameDate = s2.date == s1.date;
+    sameImgId = s2.imageId == s1.imageId;
+    sameCamId = s2.camId == s1.camId;
+    sameParticleId = s2.particleId == s1.particleId;
     if s2.date < s1.date || ...
-       s2.imageId < s1.imageId || ...
-       (s2.imageId == s1.imageId && s2.camId < s1.camId) 
+       (sameDate && s2.imageId < s1.imageId) || ...
+       (sameDate && sameImgId && s2.camId < s1.camId) || ...
+       (sameDate && sameImgId && sameCamId && s2.particleId < s1.particleId)
         cmp = -1;
-    elseif s2.date == s1.date && ...
-           s2.camId == s1.camId && ...
-           s2.imageId == s1.imageId && ...
-           s2.particleId == s1.particleId
+    elseif sameDate && sameImgId && sameCamId && sameParticleId
         cmp = 0;
     else
         cmp = 1;
@@ -47,9 +53,9 @@ cachedPath = ['cache' filesep 'cached_paths_' num2str(cachedPath) filesep];
 %% SORT CACHED PATHS
 disp('Preparing old set of images in cached path for syncing')
 
-% For this algorithm to work correctly, both the old set of f*.txt files
+% WARNING: For this algorithm to work correctly, both the old set of f*.txt files
 % and the list of new images should be sorted.
-maxListLength = 1000000;
+maxListLength = 1e6;
 oldList = cell(maxListLength,1);
 oldDirectories = cell(maxListLength,1);
 oldCache = cell(maxListLength,6);
@@ -61,11 +67,11 @@ for i = 1:numCacheFiles
     fileList = textscan(fid, '%s %s %s %s %s %s');
     fclose(fid);
 
-    filepathList = fileList{1};
+    filepathList = fileList{1}; % get first column of fileList
     for j = 1:length(filepathList)
         thisFile = filepathList{j};
         filename = regexp(thisFile, settings.mascImgRegPattern, 'match'); filename = filename{1};
-        oldDirectories{oldCounter} = thisFile(1:strfind(thisFile,filename)-2);
+        oldDirectories{oldCounter} = thisFile(1:strfind(thisFile,filename)-1);
         oldList{oldCounter} = parse_masc_filename(filename);
         if mod(oldCounter, maxListLength) > maxListLength
             oldList = [oldList; cell(maxListLength,1)]; %#ok<AGROW>
@@ -101,7 +107,7 @@ for i = 1:length(files)
     else
         newf = newf{1};
     end
-    newDirectories{i} = files(i).name(1:strfind(files(i).name,newf)-2);
+    newDirectories{i} = files(i).name(1:strfind(files(i).name,newf)-1);
     newList{i} = parse_masc_filename(newf);
 end
 fprintf('Sorting new image set...');
@@ -130,10 +136,10 @@ while i <= oldListLength
     if ~mod(i/oldListLength, 0.1)
         disp([num2str(round(i/oldListLength*100)) '% complete...']);
     end
-    ia = sortedOldIdx(i);
-    ja = sortedNewIdx(j);
     
+    ia = sortedOldIdx(i);
     if j <= length(files)
+        ja = sortedNewIdx(j);
         newf_s = newList(j);
         newf_dir = newDirectories{j};
     end
@@ -143,6 +149,9 @@ while i <= oldListLength
     cmp = mascCmp(newf_s, oldf_s);
     if j > length(files) || cmp <= 0
         % Write the old line so it can catch up to new files
+        if contains(oldf_dir, 'CROP_CAM')
+            oldf_dir = oldf_dir(1:strfind(oldf_dir,'CROP_CAM')-1);
+        end
         if j <= length(files) && ~strcmp(newf_dir, oldf_dir)
             % Refresh path in line
             oldCache{ia,1} = strrep(oldCache{ia,1}, oldf_dir, newf_dir);
@@ -156,7 +165,12 @@ while i <= oldListLength
     elseif cmp > 0
         % Brand new file, need to catch up to old files
         newf = regexp(files(ja).name, settings.mascImgRegPattern, 'match'); newf = newf{1};
-        fprintf(fid_sync, '%s\t1\t0\t0\t0\t0\n', [newf_dir filesep newf]);
+        if ~isempty(newf_dir)
+            newf_path = [newf_dir filesep newf];
+        else
+            newf_path = newf;
+        end
+        fprintf(fid_sync, '%s\t1\t0\t0\t0\t0\n', newf_path);
         imgsAdded = imgsAdded + 1;
         j = j + 1;
     else
@@ -177,7 +191,12 @@ end
 while j <= length(files)
     newf = regexp(files(sortedNewIdx(j)).name, settings.mascImgRegPattern, 'match'); newf = newf{1};
     newf_dir = newDirectories{j};
-    fprintf(fid_sync, '%s\t1\t0\t0\t0\t0\n', [newf_dir filesep newf]);
+    if ~isempty(newf_dir)
+        newf_path = [newf_dir filesep newf];
+    else
+        newf_path = newf;
+    end
+    fprintf(fid_sync, '%s\t1\t0\t0\t0\t0\n', newf_path);
     totalWritten = totalWritten + 1;
            
     % End the file if it's getting too big
