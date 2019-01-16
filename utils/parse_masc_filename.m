@@ -34,7 +34,7 @@ if dstartId > 1
     else
         % Make sure we don't get any directory path in the site/station
         fileStart = 1;
-        if contains(filename, filesep)
+        if strfind(filename, filesep)
             fileStart = find(filename == filesep,1,'last') + 1;
         end
         filename = filename(fileStart : end);

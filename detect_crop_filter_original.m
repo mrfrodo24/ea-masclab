@@ -132,11 +132,11 @@ while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
         originalFilename = allocatedFiles{image_id,1};
 
         % Get original image's file extension
-        if contains(originalFilename, '.png', 'IgnoreCase', 1)
+        if strfind(originalFilename, '.png', 'IgnoreCase', 1)
             fileExt = 'PNG';
-        elseif contains(originalFilename, '.jpg', 'IgnoreCase', 1)
+        elseif strfind(originalFilename, '.jpg', 'IgnoreCase', 1)
             fileExt = 'JPG';
-        elseif contains(originalFilename, '.jpeg', 'IgnoreCase', 1)
+        elseif strfind(originalFilename, '.jpeg', 'IgnoreCase', 1)
             fileExt = 'JPEG';
         else
             fprintf('Unsupported image file extension for file: %s\n', originalFilename);

@@ -149,7 +149,7 @@ while i <= oldListLength
     cmp = mascCmp(newf_s, oldf_s);
     if j > length(files) || cmp <= 0
         % Write the old line so it can catch up to new files
-        if contains(oldf_dir, 'CROP_CAM')
+        if strfind(oldf_dir, 'CROP_CAM')
             oldf_dir = oldf_dir(1:strfind(oldf_dir,'CROP_CAM')-1);
         end
         if j <= length(files) && ~strcmp(newf_dir, oldf_dir)

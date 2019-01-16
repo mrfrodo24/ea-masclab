@@ -406,7 +406,7 @@ function define_params
     if ~isempty(s)
         % First, check if user provided path is already in cached_paths
         if exist(CACHED_PATHS_TXT, 'file')
-            if contains(fileread(CACHED_PATHS_TXT), ['"' s '"'])
+            if strfind(fileread(CACHED_PATHS_TXT), ['"' s '"'])
                 % Path has been used before, accept this input
                 files = 1;
                 disp('Path found in cache! Okay to use again. Continuing...')
@@ -440,7 +440,7 @@ function define_params
             end
             if ~isempty(s)
                 if exist(CACHED_PATHS_TXT, 'file')
-                    if ~contains(fileread(CACHED_PATHS_TXT), ['"' s '"'])
+                    if ~strfind(fileread(CACHED_PATHS_TXT), ['"' s '"'])
                         % Path has been used before, accept this input
                         files = 1;
                         disp('Path found in cache! Okay to use again. Continuing...')
