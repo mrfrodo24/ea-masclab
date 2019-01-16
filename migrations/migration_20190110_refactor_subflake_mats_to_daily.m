@@ -60,11 +60,11 @@ for i = 0 : numAllFlakeFiles - 1
                     % already a file for theDate, update it
                     load(dFile, 'subFlakes');
                     subFlakes = [subFlakes; allFlakes(firstInD:lastInD,:)]; %#ok<AGROW>
-                    save(dFile, 'subFlakes', '-append')
+                    save(dFile, 'subFlakes', '-append', '-v7.3')
                 else
                     % new file for theDate
                     subFlakes = allFlakes(firstInD:lastInD,:);
-                    save(dFile, 'subFlakes', 'settings')
+                    save(dFile, 'subFlakes', 'settings', '-v7.3')
                     dates = [dates theDate]; %#ok<AGROW> append theDate to dates
                 end
             end
@@ -82,11 +82,11 @@ if theDate ~= 0
         % already a file for last date, update it
         load(dFile, 'subFlakes');
         subFlakes = [subFlakes; allFlakes(firstInD:lastInD,:)];
-        save(dFile, 'subFlakes', '-append')
+        save(dFile, 'subFlakes', '-append', '-v7.3')
     else
         % new file for last date
         subFlakes = allFlakes(firstInD:lastInD,:);
-        save(dFile, 'subFlakes', 'settings')
+        save(dFile, 'subFlakes', 'settings', '-v7.3')
         dates = [dates theDate]; %#ok<NASGU> append theDate to dates
     end
 end
@@ -117,11 +117,11 @@ for i = 0 : numGoodFlakeFiles - 1
                     % already a file for theDate, update it
                     load(dFile, 'goodSubFlakes');
                     goodSubFlakes = [goodSubFlakes; goodFlakes(firstInD:lastInD,:)]; %#ok<AGROW>
-                    save(dFile, 'goodSubFlakes', '-append')
+                    save(dFile, 'goodSubFlakes', '-append', '-v7.3')
                 else
                     % new file for theDate
                     goodSubFlakes = goodFlakes(firstInD:lastInD,:);
-                    save(dFile, 'goodSubFlakes', 'settings')
+                    save(dFile, 'goodSubFlakes', 'settings', '-v7.3')
                     dates = [dates theDate]; %#ok<AGROW> append theDate to dates
                 end
             end
@@ -139,11 +139,11 @@ if theDate ~= 0
         % already a file for last date, update it
         load(dFile, 'goodSubFlakes');
         goodSubFlakes = [goodSubFlakes; goodFlakes(firstInD:lastInD,:)];
-        save(dFile, 'goodSubFlakes', '-append')
+        save(dFile, 'goodSubFlakes', '-append', '-v7.3')
     else
         % new file for last date
         goodSubFlakes = goodFlakes(firstInD:lastInD,:);
-        save(dFile, 'goodSubFlakes', 'settings')
+        save(dFile, 'goodSubFlakes', 'settings', '-v7.3')
         dates = [dates theDate]; % append theDate to dates
     end
 end
