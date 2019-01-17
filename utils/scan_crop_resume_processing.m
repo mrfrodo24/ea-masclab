@@ -28,7 +28,7 @@ settings.pause = 1;
 
 % Call Scan & Crop
 try
-    status = detect_crop_filter_original(settings);
+    status = detect_crop_filter_original(CACHED_PATH_SELECTION, settings);
 catch err
     keyboard; % Fatal error occurred, so wait for user to come back and see
               % what went wrong before continuing
