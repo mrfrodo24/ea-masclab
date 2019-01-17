@@ -45,9 +45,6 @@ allocatedFiles = cell(MAX_CACHEFILE_RECORDS, NUM_FILE_FIELDS);
 
 % track the date of records being accumulated for
 theDate = 0;
-% track the dates that have been processed (might end up having to append)
-% or that already have mat files.
-dates = get_cached_flakes_dates(settings.pathToFlakes, 'all');
 
 % Here, we'll declare a variable subFlakes, which will store ALL pertinent
 % statistical data for each cropped snowflake.  We will make it a cell
@@ -230,7 +227,7 @@ while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
         % Check if the goodSubFlakes & subFlakes for theDate need to be
         % saved off because we've gotten to a new date
         if theDate ~= d
-            saveFlakeMatFiles(theDate, dates);
+            saveFlakeMatFiles(theDate);
             theDate = d;
         end
             
@@ -355,7 +352,7 @@ while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
 end
 
 % Save the last batch of subflakes
-saveFlakeMatFiles(theDate, dates);
+saveFlakeMatFiles(theDate);
 % Clear everything in the function
 clearvars -except status;
 
@@ -395,20 +392,20 @@ fprintf('\n')
         
     end 
 
-    function saveFlakeMatFiles(theDate, dates)
+    function saveFlakeMatFiles(theDate)
         if theDate ~= 0
             filePrefix = [settings.pathToFlakes 'cache' filesep 'data_' datestr(theDate,'yyyymmdd')];
             allFile = [filePrefix '_allflakes.mat'];
             goodFile = [filePrefix '_goodflakes.mat'];
-            if ismember(theDate, dates)
+            if exist(allFile, 'file')
                 newSubFlakes = subFlakes;
-                newGoodSubFlakes = goodSubFlakes;
                 load(allFile, 'subFlakes')
-                load(goodFile, 'goodSubFlakes')
                 subFlakes = [subFlakes; newSubFlakes]; 
-                goodSubFlakes = [goodSubFlakes; newGoodSubFlakes];
-            else
-                dates = [dates theDate]; %#ok<NASGU> append theDate to dates
+                if exist(goodFile, 'file')
+                    newGoodSubFlakes = goodSubFlakes;
+                    load(goodFile, 'goodSubFlakes')
+                    goodSubFlakes = [goodSubFlakes; newGoodSubFlakes];
+                end
             end
             subFlakes = stripEmptyCellRows(subFlakes);
             goodSubFlakes = stripEmptyCellRows(goodSubFlakes);

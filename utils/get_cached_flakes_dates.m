@@ -27,7 +27,7 @@ end
 
 files = dir([pathToFlakes 'cache' filesep 'data_*_' suffix]);
 
-dates = nan(length(files),1);
+dates = nan(1,length(files));
 
 for i = 1:length(files)
     

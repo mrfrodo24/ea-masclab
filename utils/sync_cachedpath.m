@@ -166,7 +166,7 @@ while i <= oldListLength
         % Brand new file, need to catch up to old files
         newf = regexp(files(ja).name, settings.mascImgRegPattern, 'match'); newf = newf{1};
         if ~isempty(newf_dir)
-            newf_path = [newf_dir filesep newf];
+            newf_path = [newf_dir newf];
         else
             newf_path = newf;
         end
