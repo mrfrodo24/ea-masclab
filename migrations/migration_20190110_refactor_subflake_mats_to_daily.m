@@ -30,31 +30,44 @@ if numAllFlakeFiles == 0
 elseif numGoodFlakeFiles == 0
     disp('No good flakes data to migrate.')
 end
-if numAllFlakeFiles > 0
-end
 
 % Go from data[int]_allflakes.mat to data_[date]_allflakes.mat (same for goodflakes)
 
 %% All flakes
-textprogressbar(['Migrating ' num2str(numAllFlakeFiles) ' all flake files...'], numAllFlakeFiles);
+textprogressbar(['Migrating ' num2str(numAllFlakeFiles) ' all flake files... '], numAllFlakeFiles - 1);
 
+allFlakes = {};     % all of the flakes
 theDate = 0;        % the current date
-dates = [];   % keep a list of all dates with files
-firstInD = 1; % index into allFlakes of first flake in date d
-lastInD = 1;  %#ok<NASGU> index into allFlakes of last flake in date d
+dates = [];         % keep a list of all dates with files
+firstInD = 1;       % index into allFlakes of first flake in date d
+lastInD = 1;        %#ok<NASGU> index into allFlakes of last flake in date d
 
 for i = 0 : numAllFlakeFiles - 1
+    textprogressbar(i);
     load([matFilePath 'data' num2str(i) '_allflakes.mat'], 'subFlakes');
-    allFlakes = subFlakes; clear subFlakes
-    lastFlake = find(cellfun(@isempty, allFlakes(:,1)), 1, 'first');
-    for j = 1 : lastFlake - 1
+    lastFlake = find(~cellfun(@isempty, subFlakes(:,1)), 1, 'last');
+    if isempty(lastFlake), continue; end
+    if ~isempty(allFlakes)
+        % trim allFlakes, only keeping what's in theDate that hasn't
+        % been saved yet
+        allFlakes = allFlakes(firstInD:end,:);
+        firstInD = 1;
+        firstFlake = length(allFlakes) + 1;
+        allFlakes = [allFlakes; subFlakes(1:lastFlake,:)]; %#ok<AGROW>
+        lastFlake = length(allFlakes);
+    else
+        firstFlake = 1;
+        allFlakes = subFlakes;
+    end
+    clear goodSubFlakes
+    for j = firstFlake : lastFlake
         flake = parse_masc_filename(allFlakes{j,1});
         d = datenum(datestr(flake.date,'yyyymmdd'),'yyyymmdd');
         if theDate ~= d
             % Need to make a new file for theDate
             if theDate ~= 0
                 % save the data for theDate
-                lastInD = j;
+                lastInD = j - 1;
                 dFile = [matFilePath 'data_' datestr(theDate,'yyyymmdd') '_allflakes.mat'];
                 if ismember(theDate, dates)
                     % already a file for theDate, update it
@@ -72,7 +85,6 @@ for i = 0 : numAllFlakeFiles - 1
             firstInD = j;
         end
     end
-    textprogressbar(i);
 end
 if theDate ~= 0
     % save the data for the last date
@@ -93,25 +105,40 @@ end
 textprogressbar(' done!');
 
 %% Good Flakes
-textprogressbar(['Migrating ' num2str(numGoodFlakeFiles) ' good flake files...'], numGoodFlakeFiles);
+textprogressbar(['Migrating ' num2str(numGoodFlakeFiles) ' good flake files... '], numGoodFlakeFiles - 1);
 
+goodFlakes = {};    % the good flakes
 theDate = 0;        % the current date
-dates = [];   % keep a list of all dates with files
-firstInD = 1; % index into allFlakes of first flake in date d
-lastInD = 1;  % index into allFlakes of last flake in date d
+dates = [];         % keep a list of all dates with files
+firstInD = 1;       % index into goodFlakes of first flake in date d
+lastInD = 1;        % index into goodFlakes of last flake in date d
 
 for i = 0 : numGoodFlakeFiles - 1
+    textprogressbar(i);
     load([matFilePath 'data' num2str(i) '_goodflakes.mat'], 'goodSubFlakes');
-    goodFlakes = goodSubFlakes; clear goodSubFlakes
-    lastFlake = find(cellfun(@isempty, goodFlakes(:,1)), 1, 'first');
-    for j = 1 : lastFlake - 1
+    lastFlake = find(~cellfun(@isempty, goodSubFlakes(:,1)), 1, 'last');
+    if isempty(lastFlake), continue; end
+    if ~isempty(goodFlakes)
+        % trim the goodFlakes, only keeping what's in theDate that hasn't
+        % been saved yet
+        goodFlakes = goodFlakes(firstInD:end,:);
+        firstInD = 1;
+        firstFlake = length(goodFlakes) + 1;
+        goodFlakes = [goodFlakes; goodSubFlakes(1:lastFlake,:)]; %#ok<AGROW>
+        lastFlake = length(goodFlakes);
+    else
+        firstFlake = 1;
+        goodFlakes = goodSubFlakes; 
+    end
+    clear goodSubFlakes
+    for j = firstFlake : lastFlake
         flake = parse_masc_filename(goodFlakes{j,1});
         d = datenum(datestr(flake.date,'yyyymmdd'),'yyyymmdd');
         if theDate ~= d
             % Need to make a new file for theDate
             if theDate ~= 0
                 % save the data for theDate
-                lastInD = j;
+                lastInD = j - 1;
                 dFile = [matFilePath 'data_' datestr(theDate,'yyyymmdd') '_goodflakes.mat'];
                 if ismember(theDate, dates)
                     % already a file for theDate, update it
@@ -129,7 +156,6 @@ for i = 0 : numGoodFlakeFiles - 1
             firstInD = j;
         end
     end
-    textprogressbar(i);
 end
 if theDate ~= 0
     % save the data for the last date
