@@ -109,7 +109,7 @@ while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
     while image_id <= totalFlakes && ~isempty(allocatedFiles{image_id,1})
 
         % Print the status of the loop
-        textprogressbar(image_id);
+        textprogressbar(count_scans);
         
         % First check that record in allocatedFiles indicated by image_id is to be
         % scanned:
@@ -336,6 +336,7 @@ while (isfield(settings, 'pause') && settings.resume + 20 > cache_counter && ...
         count_scans = count_scans + 1;
 
     end
+    textprogressbar(count_scans);
     textprogressbar(' done!');
 
     % To store the location and boundary of each flake, we save off the
