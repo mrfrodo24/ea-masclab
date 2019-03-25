@@ -43,8 +43,14 @@ end
 % are run after their dependents.
 
 disp('Checking module dependencies defined in ModuleInputHandler')
-% Load the first goodSubFlakes, just to see if some data is already there
-load([settings.pathToFlakes 'cache/data0_goodflakes.mat'], 'goodSubFlakes')
+goodFlakeDates = get_cached_flakes_dates(settings.pathToFlakes, 'good');
+if isempty(goodFlakeDates)
+    goodSubFlakes = initGoodSubFlakes();
+else
+    % Load the first goodSubFlakes, just to see if some data is already there
+    firstDate = datestr(goodFlakeDates(1),'yyyymmdd');
+    load([settings.pathToFlakes 'cache/data_' firstDate '_goodflakes.mat'], 'goodSubFlakes')
+end
 
 i = length(modules);
 while i > 0
@@ -109,7 +115,7 @@ while i > 0
                 % dependency, that way user can optionally not run the
                 % dependency if dependency already has data.
                 if exist('goodSubFlakes','var')
-                    if ~isempty(goodSubFlakes{1,module_output_indices(1)}) %#ok<NODEF>
+                    if ~isempty(goodSubFlakes{1,module_output_indices(1)})
                         moduleBeenRun = 1;
                     end
                 end

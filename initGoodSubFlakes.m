@@ -8,9 +8,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [goodSubFlakes] = initGoodSubFlakes( predefined )
     %% DEFINE goodSubFlakes
-    MAX_GOODSUBFLAKES = 10000;
+    MIN_GOODSUBFLAKES = 10000;
     NUM_COLUMNS = 34;
-    goodSubFlakes = cell(MAX_GOODSUBFLAKES, NUM_COLUMNS);
+    goodSubFlakes = cell(MIN_GOODSUBFLAKES, NUM_COLUMNS);
     
     %% DEFAULT goodSubFlake Parameters (derived from SCAN & CROP)
     % Column 1: <STRING> Sub-flake file name
