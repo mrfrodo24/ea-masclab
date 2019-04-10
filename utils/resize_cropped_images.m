@@ -32,7 +32,7 @@ for i = 1:length(dates)
         
         if ~isempty(f)
             % Pass this CROP_CAM directory to imageResize
-            resizedImgDir = [pathToResizedImgs cropCamSubDir];
+            resizedImgDir = [pathToResizedImgs filesep cropCamSubDir];
             mkdir(resizedImgDir);
             imageResize(cropCamDir, resizedImgDir, targetScale, scaleBar, 0, settings.siteName);
         end
