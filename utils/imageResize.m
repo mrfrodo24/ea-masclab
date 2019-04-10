@@ -26,11 +26,17 @@
 %       scalebarLength: Need length of desired scalebar in mm. A scalebar
 %                       length of 3 is highly recommended. 
 %                           Example: 3
-%       appendSuffixToNewFile: If set to 1, then new images will have the
-%                               following suffix appended to their original 
-%                               image file name.
+%       varargin:
+%           (1) integer if set to 1, then new images will have the
+%               following suffix appended to their original image file name.
+%           (2) site of image
 
-function imageResize(flakeopenDirectory,flakesaveDirectory,targetScale,scalebarLength,appendSuffixToNewFile)
+function imageResize(flakeopenDirectory,flakesaveDirectory,targetScale,scalebarLength,varargin)
+
+mascSite = '';
+appendSuffixToNewFile = 1;
+if length(varargin) >= 2, mascSite = varargin{2}; end
+if length(varargin) >= 1, appendSuffixToNewFile = varargin{1}; end
 
 % Obtain information about all files in collage image
 % directory, and read in images
@@ -58,7 +64,11 @@ cameraID = zeros(sz,1);
 for n = 1:sz
     masc = parse_masc_filename(filelist(n).name);
     years(n) = year(masc.date);
-    site{n} = masc.site;
+    if ~isfield(masc,'site')
+        site{n} = mascSite;
+    else
+        site{n} = masc.site;
+    end
     %site(n) = sprintf('%s',masc.site);
     cameraID(n) = masc.camId;
 end
