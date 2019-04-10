@@ -13,10 +13,14 @@ end
 
 dates = get_cached_flakes_dates(settings.pathToFlakes, 'good');
 
+textprogressbar('Making resized images for each day with flakes... ', length(dates));
+
 for i = 1:length(dates)
     
     % TODO - For now, only works if contents of pathToFlakes are
     % directories of mm/dd/HH/CROP_CAM
+    
+    textprogressbar(i);
     
     for h = 0:23
         hStr = num2str(h);
@@ -34,3 +38,5 @@ for i = 1:length(dates)
     end
     
 end
+
+textprogressbar(' done!');
