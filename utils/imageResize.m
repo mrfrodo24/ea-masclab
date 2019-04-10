@@ -44,7 +44,7 @@ while i <=length(filelist)
         i=i+1;
     catch 
         %stop=1;
-        fprintf("ERROR: File %s could not be read\n",filelist(i).name);
+        fprintf('ERROR: File %s could not be read\n',filelist(i).name);
         filelist(i)=[]; % will remove the element that failed
         continue;
     end

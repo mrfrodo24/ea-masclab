@@ -7,9 +7,10 @@ targetScale = 100;
 % make the scale bar image)
 scaleBar = 3; % mm (3 mm is recommended)
 
-if ~isdir(pathToResizedImgs)
-    mkdir(pathToResizedImgs)
-end
+%% Main
+% turn off warnings about trying to make a directory that already exists
+warning('off', 'MATLAB:MKDIR:DirectoryExists')
+mkdir(pathToResizedImgs)
 
 dates = get_cached_flakes_dates(settings.pathToFlakes, 'good');
 
@@ -40,3 +41,5 @@ for i = 1:length(dates)
 end
 
 textprogressbar(' done!');
+
+warning('on', 'MATLAB:MKDIR:DirectoryExists')
