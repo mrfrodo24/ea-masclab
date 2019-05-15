@@ -103,6 +103,7 @@ if theDate ~= 0
     end
 end
 textprogressbar(' done!');
+fprintf('\n');
 
 %% Good Flakes
 textprogressbar(['Migrating ' num2str(numGoodFlakeFiles) ' good flake files... '], numGoodFlakeFiles - 1);
@@ -174,6 +175,7 @@ if theDate ~= 0
     end
 end
 textprogressbar(' done!');
+fprintf('\n');
 
 % END MIGRATION
 disp('Migration complete!')

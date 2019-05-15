@@ -7,6 +7,7 @@ function [settings, selection] = pre_processing(varargin)
 addpath(genpath('./modules'))
 addpath(genpath('./data'))
 addpath(genpath('./export'))
+addpath(genpath('./migrations'))
 addpath(genpath('./cache'))
 addpath(genpath('./utils'))
 
