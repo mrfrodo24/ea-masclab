@@ -73,7 +73,7 @@ for i = 0 : numAllFlakeFiles - 1
                     % already a file for theDate, update it
                     load(dFile, 'subFlakes');
                     subFlakes = [subFlakes; allFlakes(firstInD:lastInD,:)]; %#ok<AGROW>
-                    save(dFile, 'subFlakes', '-append', '-v7.3')
+                    save(dFile, 'subFlakes', '-append')
                 else
                     % new file for theDate
                     subFlakes = allFlakes(firstInD:lastInD,:);
@@ -94,7 +94,7 @@ if theDate ~= 0
         % already a file for last date, update it
         load(dFile, 'subFlakes');
         subFlakes = [subFlakes; allFlakes(firstInD:lastInD,:)];
-        save(dFile, 'subFlakes', '-append', '-v7.3')
+        save(dFile, 'subFlakes', '-append')
     else
         % new file for last date
         subFlakes = allFlakes(firstInD:lastInD,:);
@@ -145,7 +145,7 @@ for i = 0 : numGoodFlakeFiles - 1
                     % already a file for theDate, update it
                     load(dFile, 'goodSubFlakes');
                     goodSubFlakes = [goodSubFlakes; goodFlakes(firstInD:lastInD,:)]; %#ok<AGROW>
-                    save(dFile, 'goodSubFlakes', '-append', '-v7.3')
+                    save(dFile, 'goodSubFlakes', '-append')
                 else
                     % new file for theDate
                     goodSubFlakes = goodFlakes(firstInD:lastInD,:);
@@ -166,7 +166,7 @@ if theDate ~= 0
         % already a file for last date, update it
         load(dFile, 'goodSubFlakes');
         goodSubFlakes = [goodSubFlakes; goodFlakes(firstInD:lastInD,:)];
-        save(dFile, 'goodSubFlakes', '-append', '-v7.3')
+        save(dFile, 'goodSubFlakes', '-append')
     else
         % new file for last date
         goodSubFlakes = goodFlakes(firstInD:lastInD,:);
