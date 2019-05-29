@@ -3,7 +3,7 @@
 %% VERY IMPORTANT! 
 % Run Scan and Crop before attempting to resize images.
 %
-settings.pathToFlakes = 'C:\Users\toby2399\Documents\MATLAB\201601\';
+
 
 %% Options and Settings
 
