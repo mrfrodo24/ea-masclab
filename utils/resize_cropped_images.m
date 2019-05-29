@@ -3,6 +3,7 @@
 %% VERY IMPORTANT! 
 % Run Scan and Crop before attempting to resize images.
 %
+settings.pathToFlakes = 'C:\Users\toby2399\Documents\MATLAB\201601\';
 
 %% Options and Settings
 
@@ -23,7 +24,7 @@ scaleBar = 3; % mm (3 mm is recommended)
 % This utility program, 'rdir(ROOT TEST rPATH)' will work nicely.
 
 imgFilter = @(d) isempty(regexp(d.name, 'resized_imgs', 'once'));
-refdir = rdir([settings.pathToFlakes '**\CROP_CA*'], imgFilter);
+refdir = rdir([settings.pathToFlakes '**' filesep 'CROP_CA*'], imgFilter);
 
 if length(refdir) < 1
     fprintf('You must run Scan and Crop before attempting to resize images.\n');
@@ -49,7 +50,7 @@ for i = 1:length(refdir)
     % pass the full path of cropped images and the directory that resized
     % images will be placed in to 'imageResize'
     
-    imageResize(fullCropPath, resizedImgDir, targetScale, scaleBar, 0, settings.siteName);
+    imageResize(fullCropPath, resizedImgDir, targetScale, scaleBar, 0, settings.siteName, 0);
     
 end 
 

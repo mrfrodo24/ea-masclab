@@ -33,16 +33,20 @@
 
 function imageResize(flakeopenDirectory, flakesaveDirectory, targetScale, scalebarLength, varargin)
 
+screenReport = 0; 
 mascSite = '';
 appendSuffixToNewFile = 1;
+if length(varargin) >= 1, screenReport = varargin{1}; end
 if length(varargin) >= 2, mascSite = varargin{2}; end
-if length(varargin) >= 1, appendSuffixToNewFile = varargin{1}; end
+if length(varargin) >= 3, appendSuffixToNewFile = varargin{1}; end
 
 % Obtain information about all files in collage image
 % directory, and read in images
 filelist = dir([flakeopenDirectory filesep '*.png']);
 sz = length(filelist);
-fprintf('Resizing %d images\n',sz);
+
+if screenReport, fprintf('Resizing %d images\n',sz); end
+
 i = 1;
 while i <= length(filelist)
     try
