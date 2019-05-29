@@ -43,7 +43,7 @@ textprogressbar('Makeing resized images. ', length(refdir));
 for i = 1:length(refdir)
     textprogressbar(i);
     fullCropPath = refdir(i).name;
-    cropCamSubDir = erase(fullCropPath, settings.pathToFlakes);
+    cropCamSubDir = strrep(fullCropPath, settings.pathToFlakes, '');
     resizedImgDir = [pathToResizedImgs filesep cropCamSubDir];
     mkdir(resizedImgDir);
     
