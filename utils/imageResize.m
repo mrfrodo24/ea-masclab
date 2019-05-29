@@ -31,7 +31,7 @@
 %               following suffix appended to their original image file name.
 %           (2) site of image
 
-function imageResize(flakeopenDirectory,flakesaveDirectory,targetScale,scalebarLength,varargin)
+function imageResize(flakeopenDirectory, flakesaveDirectory, targetScale, scalebarLength, varargin)
 
 mascSite = '';
 appendSuffixToNewFile = 1;
@@ -43,11 +43,11 @@ if length(varargin) >= 1, appendSuffixToNewFile = varargin{1}; end
 filelist = dir([flakeopenDirectory filesep '*.png']);
 sz = length(filelist);
 fprintf('Resizing %d images\n',sz);
-i=1;
-while i <=length(filelist)
+i = 1;
+while i <= length(filelist)
     try
         filelist(i).image = imread([flakeopenDirectory filesep filelist(i).name]);
-        i=i+1;
+        i = i + 1;
     catch 
         %stop=1;
         fprintf('ERROR: File %s could not be read\n',filelist(i).name);
@@ -89,13 +89,13 @@ asucam2 = 33.113;
 % Loop through collage table to assign scale to each of the flakes based on
 % the location, year (only alta), and camera
 for o = 1:sz
-    if site{o} == 'sbu'
+    if strcmpi(site{o}, 'sbu')
         if cameraID(o) == 1
             filelist(o).scale = sbucam1;
         else
             filelist(o).scale = sbucam02;
         end
-    elseif site{o} == 'alta'
+    elseif strcmpi(site{o}, 'alta')
         if years(o) == 2013
             if cameraID(o) == 0
                 filelist(o).scale = alta2013cam0;
@@ -111,7 +111,7 @@ for o = 1:sz
                 filelist(o).scale = altacam02;
             end
         end
-    elseif site{o} == 'asu'
+    elseif strcmpi(site{o}, 'asu')
         if cameraID(o) == 0
             filelist(o).scale = asucam0;
         elseif cameraID(o) == 1
