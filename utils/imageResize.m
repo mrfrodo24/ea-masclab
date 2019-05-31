@@ -124,7 +124,7 @@ for o = 1:sz
             filelist(o).scale = asucam2;
         end
     else
-        fprintf('%s', filelist(o).name);
+        fprintf('\n%s %s\n', filelist(o).name, site{o});
         keyboard
         error('The site does not match one of our recognized sites.') 
     end
