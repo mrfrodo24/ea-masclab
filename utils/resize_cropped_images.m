@@ -12,10 +12,11 @@
 %% VERY IMPORTANT! 
 % Run Scan and Crop before attempting to resize images.
 %
-
+%% test directory on local machine... 
+% settings.pathToFlakes = 'C:\Users\toby2399\Documents\MATLAB\201601\';
 
 %% Options and Settings
-settings.pathToFlakes = 'C:\Users\toby2399\Documents\MATLAB\201601\';
+
 % Specify place to write out resized images
 pathToResizedImgs = [settings.pathToFlakes 'resized_imgs'];
 
