@@ -124,7 +124,9 @@ for o = 1:sz
             filelist(o).scale = asucam2;
         end
     else
-        error('The site does not match one of our recognized sites.')
+        fprintf('%s', filelist(o).name);
+        keyboard
+        error('The site does not match one of our recognized sites.') 
     end
 end
 
