@@ -1,9 +1,8 @@
 %% Documentation
 % Author: Levi Lovell
 % Created: 7/28/2018
-% Modified: 7/28/2018 by Levi Lovell
-% Last Modified: 05/30/2019 by Toby Peele
-%
+% Last modified: 7/28/2018 by Levi Lovell
+% 
 % Purpose: This function is meant to rescale images to a consistent and
 %          standard value while only using the information stored in the 
 %          image filename.
@@ -93,9 +92,6 @@ asucam2 = 33.113;
 
 % Loop through collage table to assign scale to each of the flakes based on
 % the location, year (only alta), and camera
-
-tmp_index = 0; % make a home for temporary index should we have a problem.
-
 for o = 1:sz
     if strcmpi(site{o}, 'sbu')
         if cameraID(o) == 1

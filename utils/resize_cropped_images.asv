@@ -5,17 +5,14 @@
 % Update Date: 05/29/2019
 % Description: This program resizes previously 'Scanned and Cropped'
 % images. It expects to have a path to flakes already loaded in memory
-% from configuration data associated with a given site. One should run the
-% program 'ea_interactive_masclab' to load configuration settings before
-% running this program. 
-
+% from configuration data associated with a given site. Y
 %% VERY IMPORTANT! 
 % Run Scan and Crop before attempting to resize images.
 %
 
 
 %% Options and Settings
-settings.pathToFlakes = 'C:\Users\toby2399\Documents\MATLAB\201601\';
+
 % Specify place to write out resized images
 pathToResizedImgs = [settings.pathToFlakes 'resized_imgs'];
 
